@@ -23,13 +23,13 @@
 
 | 序号 | 任务 | 优先级 | 预计工时 | 状态 |
 |-----|------|--------|---------|------|
-| 1.1 | 初始化 Vite + React 19 + TypeScript 项目 | P0 | 1h | ⬜ |
-| 1.2 | 配置 Tailwind CSS + 自定义主题色（琥珀/橙色主色） | P0 | 1h | ⬜ |
-| 1.3 | 集成 shadcn/ui 组件库 | P0 | 1h | ⬜ |
-| 1.4 | 安装核心依赖：Zustand、Framer Motion、localForage | P0 | 0.5h | ⬜ |
-| 1.5 | 配置 ESLint + Prettier 代码规范 | P1 | 1h | ⬜ |
-| 1.6 | 配置路径别名 (@/components, @/hooks 等) | P1 | 0.5h | ⬜ |
-| 1.7 | 创建项目目录结构 | P0 | 0.5h | ⬜ |
+| 1.1 | 初始化 Vite + React 19 + TypeScript 项目 | P0 | 1h | ✅ |
+| 1.2 | 配置 Tailwind CSS + 自定义主题色（琥珀/橙色主色） | P0 | 1h | ✅ |
+| 1.3 | 集成 shadcn/ui 组件库 | P0 | 1h | ✅ |
+| 1.4 | 安装核心依赖：Zustand、Framer Motion、localForage | P0 | 0.5h | ✅ |
+| 1.5 | 配置 ESLint + Prettier 代码规范 | P1 | 1h | ✅ |
+| 1.6 | 配置路径别名 (@/components, @/hooks 等) | P1 | 0.5h | ✅ |
+| 1.7 | 创建项目目录结构 | P0 | 0.5h | ✅ |
 
 **目录结构规划**:
 ```
@@ -61,13 +61,14 @@ src/
 
 | 序号 | 任务 | 优先级 | 预计工时 | 状态 |
 |-----|------|--------|---------|------|
-| 2.1 | 定义核心数据类型 (types/index.ts) - **与 AI JSON 输出严格对应** | P0 | 2h | ⬜ |
-| 2.2 | 实现 IndexedDB 封装 (services/db.ts) | P0 | 3h | ⬜ |
-| 2.3 | 实现 Session 增删改查操作 | P0 | 2h | ⬜ |
-| 2.4 | 实现 Favorites 收藏数据操作 | P1 | 1h | ⬜ |
-| 2.5 | 实现 Orders 订单数据操作 | P1 | 1h | ⬜ |
+| 2.1 | 定义核心数据类型 (types/index.ts) - **与 AI JSON 输出严格对应** | P0 | 2h | ✅ |
+| 2.2 | 实现 IndexedDB 封装 (services/db.ts) | P0 | 3h | ✅ |
+| 2.3 | 实现 Session 增删改查操作 | P0 | 2h | ✅ |
+| 2.4 | 实现 Favorites 收藏数据操作 | P1 | 1h | ✅ |
+| 2.5 | 实现 Orders 订单数据操作 | P1 | 1h | ✅ |
 
 **核心类型清单**（与 AI JSON 输出结构一一对应）:
+- `NameInterpretation` - **AI 输出的四维解析 JSON 结构**
 - `BabyInfo` - 宝宝信息
 - `BabySession` - 起名会话
 - `ChatMessage` - 对话消息
@@ -83,13 +84,13 @@ src/
 
 | 序号 | 任务 | 优先级 | 预计工时 | 状态 |
 |-----|------|--------|---------|------|
-| 3.1 | 定义八字分析 JSON Schema (BaziAnalysis) | P0 | 2h | ⬜ |
-| 3.2 | 定义名字详情 JSON Schema (NameDetail) | P0 | 2h | ⬜ |
-| 3.3 | 定义四维解析 JSON Schema (NameInterpretation) | P0 | 2h | ⬜ |
-| 3.4 | 编写八字分析 AI Prompt（强制 JSON 输出） | P0 | 3h | ⬜ |
-| 3.5 | 编写名字生成 AI Prompt（强制 JSON 输出） | P0 | 3h | ⬜ |
-| 3.6 | 编写名字解析 AI Prompt（强制 JSON 输出） | P0 | 2h | ⬜ |
-| 3.7 | AI JSON 输出校验与容错处理 | P0 | 2h | ⬜ |
+| 3.1 | 定义八字分析 JSON Schema (BaziAnalysis) | P0 | 2h | ✅ |
+| 3.2 | 定义名字详情 JSON Schema (NameDetail) | P0 | 2h | ✅ |
+| 3.3 | 定义四维解析 JSON Schema (NameInterpretation) | P0 | 2h | ✅ |
+| 3.4 | 编写八字分析 AI Prompt（强制 JSON 输出） | P0 | 3h | ✅ |
+| 3.5 | 编写名字生成 AI Prompt（强制 JSON 输出） | P0 | 3h | ✅ |
+| 3.6 | 编写名字解析 AI Prompt（强制 JSON 输出） | P0 | 2h | ✅ |
+| 3.7 | AI JSON 输出校验与容错处理 | P0 | 2h | ✅ |
 
 **JSON Schema 设计示例**:
 
@@ -191,45 +192,45 @@ interface YinyunInfo {
 
 | 序号 | 任务 | 优先级 | 预计工时 | 状态 |
 |-----|------|--------|---------|------|
-| 4.1.1 | AI 生成中动画组件 (AIGenerating) | P0 | 2h | ⬜ |
-| 4.1.2 | AI 徽章组件 (AIBadge) | P0 | 0.5h | ⬜ |
-| 4.1.3 | 对话气泡组件 (ChatBubble) | P0 | 1h | ⬜ |
-| 4.1.4 | 锁定遮罩组件 (LockOverlay) | P0 | 1h | ⬜ |
-| 4.1.5 | 五行标签组件 (WuxingTag) - 接收五行字符串渲染 | P1 | 0.5h | ⬜ |
+| 4.1.1 | AI 生成中动画组件 (AIGenerating) | P0 | 2h | ✅ |
+| 4.1.2 | AI 徽章组件 (AIBadge) | P0 | 0.5h | ✅ |
+| 4.1.3 | 对话气泡组件 (ChatBubble) | P0 | 1h | ✅ |
+| 4.1.4 | 锁定遮罩组件 (LockOverlay) | P0 | 1h | ✅ |
+| 4.1.5 | 五行标签组件 (WuxingTag) - 接收五行字符串渲染 | P1 | 0.5h | ✅ |
 
 #### 4.2 八字分析组件（基于 BaziAnalysis JSON 渲染）
 
 | 序号 | 任务 | 优先级 | 预计工时 | 状态 |
 |-----|------|--------|---------|------|
-| 4.2.1 | 四柱展示组件 (BaziPillarCard) - 渲染 bazi 对象 | P0 | 2h | ⬜ |
-| 4.2.2 | 五行统计组件 (WuxingStats) - 渲染 wuxing 统计数字 | P0 | 2h | ⬜ |
-| 4.2.3 | 五行可视化图表 (WuxingChart) - 渲染 wuxingValue | P1 | 2h | ⬜ |
-| 4.2.4 | 喜用神分析组件 (XiyongAnalysis) - 渲染 xiyong/jiyong 数组 | P0 | 1.5h | ⬜ |
+| 4.2.1 | 四柱展示组件 (BaziPillarCard) - 渲染 bazi 对象 | P0 | 2h | ✅ |
+| 4.2.2 | 五行统计组件 (WuxingStats) - 渲染 wuxing 统计数字 | P0 | 2h | ✅ |
+| 4.2.3 | 五行可视化图表 (WuxingChart) - 渲染 wuxingValue | P1 | 2h | ✅ |
+| 4.2.4 | 喜用神分析组件 (XiyongAnalysis) - 渲染 xiyong/jiyong 数组 | P0 | 1.5h | ✅ |
 | 4.2.5 | 旺衰判定组件 (WangshuaiBadge) - 渲染 wangshuai 字符串 | P1 | 0.5h | ⬜ |
-| 4.2.6 | 八字分析总览卡片 (BaziAnalysisCard) - 组合以上组件 | P0 | 2h | ⬜ |
+| 4.2.6 | 八字分析总览卡片 (BaziAnalysisCard) - 组合以上组件 | P0 | 2h | ✅ |
 
 #### 4.3 起名组件（基于 NameDetail JSON 渲染）
 
 | 序号 | 任务 | 优先级 | 预计工时 | 状态 |
 |-----|------|--------|---------|------|
-| 4.3.1 | 名字卡片组件 (NameCard) - 渲染 name/pinyin/score | P0 | 2h | ⬜ |
-| 4.3.2 | 名字列表组件 (NameList) - 渲染 NameDetail[] 数组 | P0 | 1.5h | ⬜ |
-| 4.3.3 | 汉字解析组件 (CharacterAnalysis) - 渲染 characters 数组 | P0 | 2h | ⬜ |
-| 4.3.4 | 康熙字典展示组件 (KangxiInfo) - 渲染 kangxi 对象 | P1 | 1h | ⬜ |
-| 4.3.5 | 音韵分析组件 (YinyunAnalysis) - 渲染 yinyun 对象 | P0 | 1.5h | ⬜ |
+| 4.3.1 | 名字卡片组件 (NameCard) - 渲染 name/pinyin/score | P0 | 2h | ✅ |
+| 4.3.2 | 名字列表组件 (NameList) - 渲染 NameDetail[] 数组 | P0 | 1.5h | ✅ |
+| 4.3.3 | 汉字解析组件 (CharacterAnalysis) - 渲染 characters 数组 | P0 | 2h | ✅ |
+| 4.3.4 | 康熙字典展示组件 (KangxiInfo) - 渲染 kangxi 对象 | P1 | 1h | ✅ |
+| 4.3.5 | 音韵分析组件 (YinyunAnalysis) - 渲染 yinyun 对象 | P0 | 1.5h | ✅ |
 | 4.3.6 | 五行匹配组件 (WuxingMatch) - 渲染 wuxing/baziMatch | P0 | 1.5h | ⬜ |
-| 4.3.7 | 名字评分组件 (NameScore) - 渲染 score/uniqueness | P1 | 1h | ⬜ |
+| 4.3.7 | 名字评分组件 (NameScore) - 渲染 score/uniqueness | P1 | 1h | ✅ |
 | 4.3.8 | 专属寓意组件 (PersonalizedMeaning) - 渲染 personalizedMeaning | P1 | 0.5h | ⬜ |
-| 4.3.9 | 名字详情页 (NameDetailPage) - 组合以上所有组件 | P0 | 3h | ⬜ |
-| 4.3.10 | 收藏按钮组件 (FavoriteButton) | P1 | 0.5h | ⬜ |
+| 4.3.9 | 名字详情页 (NameDetailPage) - 组合以上所有组件 | P0 | 3h | ✅ |
+| 4.3.10 | 收藏按钮组件 (FavoriteButton) | P1 | 0.5h | ✅ |
 
 #### 4.4 支付组件
 
 | 序号 | 任务 | 优先级 | 预计工时 | 状态 |
 |-----|------|--------|---------|------|
-| 4.4.1 | 支付弹窗组件 (PaymentModal) | P0 | 2h | ⬜ |
-| 4.4.2 | 价格标签组件 (PriceTag) | P1 | 0.5h | ⬜ |
-| 4.4.3 | 解锁成功动画 (UnlockSuccess) | P1 | 1h | ⬜ |
+| 4.4.1 | 支付弹窗组件 (PaymentModal) | P0 | 2h | ✅ |
+| 4.4.2 | 价格标签组件 (PriceTag) | P1 | 0.5h | ✅ |
+| 4.4.3 | 解锁成功动画 (UnlockSuccess) | P1 | 1h | ✅ |
 
 ---
 
@@ -237,11 +238,11 @@ interface YinyunInfo {
 
 | 序号 | 任务 | 优先级 | 预计工时 | 状态 |
 |-----|------|--------|---------|------|
-| 5.1 | `useNamingFlow` - 起名流程状态管理 | P0 | 4h | ⬜ |
-| 5.2 | `useSessions` - 会话管理 Hook | P0 | 2h | ⬜ |
-| 5.3 | `useAI` - AI 调用封装 Hook（强制 JSON 输出） | P0 | 3h | ⬜ |
-| 5.4 | `usePayment` - 支付流程 Hook | P0 | 3h | ⬜ |
-| 5.5 | `useFavorites` - 收藏管理 Hook | P1 | 1h | ⬜ |
+| 5.1 | `useNamingFlow` - 起名流程状态管理 | P0 | 4h | ✅ |
+| 5.2 | `useSessions` - 会话管理 Hook | P0 | 2h | ✅ |
+| 5.3 | `useAI` - AI 调用封装 Hook（强制 JSON 输出） | P0 | 3h | ✅ |
+| 5.4 | `usePayment` - 支付流程 Hook | P0 | 3h | ✅ |
+| 5.5 | `useFavorites` - 收藏管理 Hook | P1 | 1h | ✅ |
 
 **useNamingFlow 核心方法**:
 - `startFlow()` - 开始起名流程
@@ -290,13 +291,13 @@ const baziData: BaziAnalysis = JSON.parse(response.choices[0].message.content);
 
 | 序号 | 任务 | 优先级 | 预计工时 | 状态 |
 |-----|------|--------|---------|------|
-| 7.1 | 欢迎页 (WelcomePage) | P0 | 2h | ⬜ |
-| 7.2 | 对话页 - 信息收集阶段 | P0 | 3h | ⬜ |
-| 7.3 | 对话页 - 八字分析展示（渲染 AI 返回的 BaziAnalysis JSON） | P0 | 3h | ⬜ |
-| 7.4 | 对话页 - 名字推荐展示（渲染 AI 返回的 NameDetail[] JSON） | P0 | 3h | ⬜ |
-| 7.5 | 名字详情页（渲染完整 NameDetail JSON） | P0 | 3h | ⬜ |
-| 7.6 | 收藏列表页 (FavoritesPage) | P1 | 2h | ⬜ |
-| 7.7 | 会话管理页 (SessionsPage) | P1 | 2h | ⬜ |
+| 7.1 | 欢迎页 (WelcomePage) | P0 | 2h | ✅ |
+| 7.2 | 对话页 - 信息收集阶段 | P0 | 3h | ✅ |
+| 7.3 | 对话页 - 八字分析展示（渲染 AI 返回的 BaziAnalysis JSON） | P0 | 3h | ✅ |
+| 7.4 | 对话页 - 名字推荐展示（渲染 AI 返回的 NameDetail[] JSON） | P0 | 3h | ✅ |
+| 7.5 | 名字详情页（渲染完整 NameDetail JSON） | P0 | 3h | ✅ |
+| 7.6 | 收藏列表页 (FavoritesPage) | P1 | 2h | ✅ |
+| 7.7 | 会话管理页 (SessionsPage) | P1 | 2h | ✅ |
 
 ---
 
@@ -304,11 +305,11 @@ const baziData: BaziAnalysis = JSON.parse(response.choices[0].message.content);
 
 | 序号 | 任务 | 优先级 | 预计工时 | 状态 |
 |-----|------|--------|---------|------|
-| 8.1 | 微信支付 H5/JSAPI 集成 | P0 | 3h | ⬜ |
-| 8.2 | 支付状态轮询查询 | P0 | 2h | ⬜ |
-| 8.3 | 解锁状态管理 | P0 | 2h | ⬜ |
-| 8.4 | 支付成功回调处理 | P0 | 1h | ⬜ |
-| 8.5 | 订单数据持久化 | P1 | 1h | ⬜ |
+| 8.1 | 微信支付 H5/JSAPI 集成（模拟 UI） | P0 | 3h | ✅ |
+| 8.2 | 支付状态轮询查询（模拟） | P0 | 2h | ✅ |
+| 8.3 | 解锁状态管理 | P0 | 2h | ✅ |
+| 8.4 | 支付成功回调处理 | P0 | 1h | ✅ |
+| 8.5 | 订单数据持久化 | P1 | 1h | ✅ |
 
 **付费点配置**:
 - 单个系列解锁：¥9.9
@@ -323,7 +324,8 @@ const baziData: BaziAnalysis = JSON.parse(response.choices[0].message.content);
 | 9.1 | 欢迎页 → 信息收集流程 | P0 | 2h | ⬜ |
 | 9.2 | 信息收集 → AI 八字分析流程（获取 BaziAnalysis JSON） | P0 | 2h | ⬜ |
 | 9.3 | 八字分析 → 风格选择流程 | P0 | 1h | ⬜ |
-| 9.4 | 风格选择 → AI 名字生成流程（获取 NameDetail[] JSON） | P0 | 2h | ⬜ |
+| 9.4 | 修复跨系列解锁状态同步问题 | P0 | 1h | ✅ |
+| 9.5 | 详情页新增“回到首页”导航 | P1 | 1h | ✅ |
 | 9.5 | 名字列表 → 支付解锁流程 | P0 | 2h | ⬜ |
 | 9.6 | 解锁 → 名字详情流程（渲染完整 JSON） | P0 | 1h | ⬜ |
 | 9.7 | 收藏/选定名字流程 | P1 | 1h | ⬜ |
@@ -334,8 +336,8 @@ const baziData: BaziAnalysis = JSON.parse(response.choices[0].message.content);
 
 | 序号 | 任务 | 优先级 | 预计工时 | 状态 |
 |-----|------|--------|---------|------|
-| 10.1 | 响应式布局适配 (320px-428px) | P0 | 3h | ⬜ |
-| 10.2 | 页面切换动效 | P1 | 2h | ⬜ |
+| 10.1 | 响应式布局适配 (320px-428px) | P0 | 3h | ✅ |
+| 10.2 | 页面切换动效 | P1 | 2h | ✅ |
 | 10.3 | AI 生成 Loading 状态优化 | P1 | 2h | ⬜ |
 | 10.4 | JSON 解析错误边界处理 | P1 | 2h | ⬜ |
 | 10.5 | 弱网环境适配 | P2 | 2h | ⬜ |
@@ -347,13 +349,27 @@ const baziData: BaziAnalysis = JSON.parse(response.choices[0].message.content);
 
 | 序号 | 任务 | 优先级 | 预计工时 | 状态 |
 |-----|------|--------|---------|------|
-| 11.1 | AI JSON 输出单元测试 | P0 | 3h | ⬜ |
-| 11.2 | 组件渲染测试（基于 mock JSON 数据） | P1 | 3h | ⬜ |
-| 11.3 | 集成测试 | P1 | 3h | ⬜ |
-| 11.4 | 支付流程测试 | P0 | 2h | ⬜ |
-| 11.5 | AI 生成测试（验证 JSON 结构） | P0 | 2h | ⬜ |
-| 11.6 | 生产环境构建优化 | P1 | 2h | ⬜ |
-| 11.7 | Vercel/Netlify 部署配置 | P0 | 1h | ⬜ |
+| 11.1 | 完善宝宝信息表单 (性别/日期/时间/地点) | P0 | 2h | ✅ |
+| 11.2 | 优化对话 UI (气泡/按钮/配色) | P1 | 2h | ✅ |
+| 11.3 | 风格选择卡片轮播组件 | P1 | 2h | ✅ |
+| 11.4 | 对话流内嵌名字预览卡片 | P0 | 3h | ✅ |
+| 11.5 | 移除自动跳转，优化交互流 | P0 | 1h | ✅ |
+| 11.6 | AI JSON 输出单元测试 | P0 | 3h | ⬜ |
+| 11.7 | 组件渲染测试（基于 mock JSON 数据） | P1 | 3h | ⬜ |
+| 11.8 | 集成测试 | P1 | 3h | ⬜ |
+| 11.9 | 支付流程测试 | P0 | 2h | ⬜ |
+| 11.10 | AI 生成测试（验证 JSON 结构） | P0 | 2h | ⬜ |
+
+---
+
+### Phase 12: 细节优化
+
+| 序号 | 任务 | 优先级 | 预计工时 | 状态 |
+|-----|------|--------|---------|------|
+| 12.1 | 优化风格选择组件 (单卡片轮播/箭头/按钮) | P0 | 2h | ✅ |
+| 12.2 | 名字示例星号脱敏处理 | P1 | 1h | ✅ |
+| 12.3 | 优化对话内嵌名字预览卡片 (分字展示/寓意/五行) | P0 | 3h | ✅ |
+
 
 ---
 
