@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNamingFlow } from '@/hooks/useNamingFlow';
 import { useSessions } from '@/hooks/useSessions';
 import { useAI } from '@/hooks/useAI';
@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChatBubble } from '@/components/ui/chat-bubble';
 import { AIGenerating } from '@/components/ui/ai-generating';
 import { BaziAnalysisCard } from '@/components/bazi/BaziAnalysisCard';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Button } from '@/components/ui/button';
 import { BabyInfo } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,6 +23,41 @@ import { NameDetailPage } from '@/components/naming/NameDetailPage';
 import { NameDetail } from '@/types';
 import { X } from 'lucide-react';
 
+// Phased loading messages for AI analysis
+const BAZI_LOADING_PHASES = [
+  '正在排盘计算...',
+  '分析四柱八字...',
+  '推算五行分布...',
+  '计算喜用神...',
+  'AI 正在生成分析报告...',
+];
+const NAME_LOADING_PHASES = [
+  '解析八字喜用...',
+  '匹配风格意境...',
+  '甄选汉字组合...',
+  '推敲音韵搭配...',
+  'AI 正在精心构思好名...',
+];
+
+function useLoadingPhase(isLoading: boolean, phases: string[]) {
+  const [phaseIndex, setPhaseIndex] = useState(0);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setPhaseIndex(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setPhaseIndex((prev) =>
+        prev < phases.length - 1 ? prev + 1 : prev
+      );
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [isLoading, phases.length]);
+
+  return phases[phaseIndex];
+}
+
 export const ChatPage: React.FC = () => {
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -35,9 +71,13 @@ export const ChatPage: React.FC = () => {
   } = useNamingFlow();
   
   const { currentSessionId, sessions, updateSession } = useSessions();
-  const { isGeneratingBazi, isGeneratingNames } = useAI();
+  const { isGeneratingBazi, isGeneratingNames, error: aiError } = useAI();
   const { createOrder, simulatePayment, isProcessing } = usePayment();
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
+
+  // Phased loading messages
+  const baziLoadingMsg = useLoadingPhase(isGeneratingBazi, BAZI_LOADING_PHASES);
+  const nameLoadingMsg = useLoadingPhase(isGeneratingNames, NAME_LOADING_PHASES);
   
   const currentSession = sessions.find(s => s.id === currentSessionId);
 
@@ -301,10 +341,23 @@ export const ChatPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <AIGenerating message="AI 正在排盘分析八字..." className="bg-white rounded-2xl" />
+              <AIGenerating message={baziLoadingMsg} className="bg-white rounded-2xl" />
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* 4.5. AI Error Display */}
+        {aiError && !isGeneratingBazi && !isGeneratingNames && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <ChatBubble
+              role="assistant"
+              content={`抱歉，AI 分析过程中遇到问题：${aiError}。请重新尝试。`}
+            />
+          </motion.div>
+        )}
 
         {/* 5. Analysis Result */}
         {(currentStep === 'analysis-result' || currentStep === 'style-selection' || currentStep === 'generating-names' || currentStep === 'name-list') && currentSession?.baziAnalysis && (
@@ -316,7 +369,9 @@ export const ChatPage: React.FC = () => {
               role="assistant"
               content="八字分析已完成！这是宝宝的命理分析报告："
             />
-            <BaziAnalysisCard data={currentSession.baziAnalysis} />
+            <ErrorBoundary fallbackTitle="八字分析加载失败">
+              <BaziAnalysisCard data={currentSession.baziAnalysis} />
+            </ErrorBoundary>
             
             {currentStep === 'analysis-result' && (
               <div className="mt-4 flex justify-center">
@@ -355,7 +410,7 @@ export const ChatPage: React.FC = () => {
               exit={{ opacity: 0 }}
             >
               <ChatBubble role="user" content={`我选择了：${currentSession?.stylePreference}`} />
-              <AIGenerating message="AI 正在根据八字和风格构思好名..." className="bg-white rounded-2xl" />
+              <AIGenerating message={nameLoadingMsg} className="bg-white rounded-2xl" />
             </motion.div>
           )}
         </AnimatePresence>
@@ -370,26 +425,28 @@ export const ChatPage: React.FC = () => {
                role="assistant"
                content={`为您生成了 ${styleNames.length} 个${currentSession?.stylePreference}风格的好名，首选推荐：`}
              />
-             <InlineNamePreview 
-               name={currentName}
-               onRefresh={handlePreviewRefresh}
-               onViewDetail={() => setSelectedNameForDetail(currentName)}
-               onViewList={() => navigate('/names')}
-               onFavorite={() => {
-                 if (isFavorite(currentName.id)) {
-                   removeFavorite(currentName.id);
-                 } else {
-                   addFavorite(currentName);
-                 }
-               }}
-               onSelect={async () => {
-                if (currentSessionId) {
-                  await updateSession(currentSessionId, { selectedNameId: currentName.id });
-                  setIsSelectionConfirmed(true);
-                }
-              }}
-              isFavorite={isFavorite(currentName.id)}
-             />
+             <ErrorBoundary fallbackTitle="名字预览加载失败">
+               <InlineNamePreview
+                 name={currentName}
+                 onRefresh={handlePreviewRefresh}
+                 onViewDetail={() => setSelectedNameForDetail(currentName)}
+                 onViewList={() => navigate('/names')}
+                 onFavorite={() => {
+                   if (isFavorite(currentName.id)) {
+                     removeFavorite(currentName.id);
+                   } else {
+                     addFavorite(currentName);
+                   }
+                 }}
+                 onSelect={async () => {
+                  if (currentSessionId) {
+                    await updateSession(currentSessionId, { selectedNameId: currentName.id });
+                    setIsSelectionConfirmed(true);
+                  }
+                }}
+                isFavorite={isFavorite(currentName.id)}
+               />
+             </ErrorBoundary>
            </motion.div>
         )}
 
@@ -433,11 +490,13 @@ export const ChatPage: React.FC = () => {
               </button>
               
               <div className="h-full overflow-y-auto">
-                <NameDetailPage 
-                  name={selectedNameForDetail} 
-                  onBack={() => setSelectedNameForDetail(null)}
-                  className="min-h-full pb-0 pt-0" 
-                />
+                <ErrorBoundary fallbackTitle="名字详情加载失败">
+                  <NameDetailPage
+                    name={selectedNameForDetail}
+                    onBack={() => setSelectedNameForDetail(null)}
+                    className="min-h-full pb-0 pt-0"
+                  />
+                </ErrorBoundary>
               </div>
             </motion.div>
           </motion.div>

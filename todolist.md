@@ -206,7 +206,7 @@ interface YinyunInfo {
 | 4.2.2 | 五行统计组件 (WuxingStats) - 渲染 wuxing 统计数字 | P0 | 2h | ✅ |
 | 4.2.3 | 五行可视化图表 (WuxingChart) - 渲染 wuxingValue | P1 | 2h | ✅ |
 | 4.2.4 | 喜用神分析组件 (XiyongAnalysis) - 渲染 xiyong/jiyong 数组 | P0 | 1.5h | ✅ |
-| 4.2.5 | 旺衰判定组件 (WangshuaiBadge) - 渲染 wangshuai 字符串 | P1 | 0.5h | ⬜ |
+| 4.2.5 | 旺衰判定组件 (WangshuaiBadge) - 渲染 wangshuai 字符串 | P1 | 0.5h | ✅（已内联在 BaziAnalysisCard 中） |
 | 4.2.6 | 八字分析总览卡片 (BaziAnalysisCard) - 组合以上组件 | P0 | 2h | ✅ |
 
 #### 4.3 起名组件（基于 NameDetail JSON 渲染）
@@ -218,9 +218,9 @@ interface YinyunInfo {
 | 4.3.3 | 汉字解析组件 (CharacterAnalysis) - 渲染 characters 数组 | P0 | 2h | ✅ |
 | 4.3.4 | 康熙字典展示组件 (KangxiInfo) - 渲染 kangxi 对象 | P1 | 1h | ✅ |
 | 4.3.5 | 音韵分析组件 (YinyunAnalysis) - 渲染 yinyun 对象 | P0 | 1.5h | ✅ |
-| 4.3.6 | 五行匹配组件 (WuxingMatch) - 渲染 wuxing/baziMatch | P0 | 1.5h | ⬜ |
+| 4.3.6 | 五行匹配组件 (WuxingMatch) - 渲染 wuxing/baziMatch | P0 | 1.5h | ✅（已内联在 NameDetailPage 中） |
 | 4.3.7 | 名字评分组件 (NameScore) - 渲染 score/uniqueness | P1 | 1h | ✅ |
-| 4.3.8 | 专属寓意组件 (PersonalizedMeaning) - 渲染 personalizedMeaning | P1 | 0.5h | ⬜ |
+| 4.3.8 | 专属寓意组件 (PersonalizedMeaning) - 渲染 personalizedMeaning | P1 | 0.5h | ✅（已内联在 NameDetailPage 中） |
 | 4.3.9 | 名字详情页 (NameDetailPage) - 组合以上所有组件 | P0 | 3h | ✅ |
 | 4.3.10 | 收藏按钮组件 (FavoriteButton) | P1 | 0.5h | ✅ |
 
@@ -258,14 +258,14 @@ interface YinyunInfo {
 
 | 序号 | 任务 | 优先级 | 预计工时 | 状态 |
 |-----|------|--------|---------|------|
-| 6.1 | AI 服务配置与初始化 | P0 | 1h | ⬜ |
-| 6.2 | 八字分析 AI 调用（response_format: json_object） | P0 | 3h | ⬜ |
-| 6.3 | 名字生成 AI 调用（返回 NameDetail[] JSON 数组） | P0 | 3h | ⬜ |
-| 6.4 | 名字解析 AI 调用（返回 NameInterpretation JSON） | P0 | 2h | ⬜ |
-| 6.5 | AI JSON 输出校验与类型守卫 | P0 | 2h | ⬜ |
-| 6.6 | AI 流式输出支持（SSE 逐字显示，但保持 JSON 结构） | P1 | 3h | ⬜ |
-| 6.7 | AI 错误重试与降级机制 | P1 | 2h | ⬜ |
-| 6.8 | AI 结果缓存机制（按 JSON 结构缓存） | P1 | 1h | ⬜ |
+| 6.1 | AI 服务配置与初始化 | P0 | 1h | ✅ |
+| 6.2 | 八字分析 AI 调用（response_format: json_object） | P0 | 3h | ✅ |
+| 6.3 | 名字生成 AI 调用（返回 NameDetail[] JSON 数组） | P0 | 3h | ✅ |
+| 6.4 | 名字解析 AI 调用（返回 NameInterpretation JSON） | P0 | 2h | ✅ |
+| 6.5 | AI JSON 输出校验与类型守卫 | P0 | 2h | ✅ |
+| 6.6 | AI 流式输出支持（SSE 逐字显示，但保持 JSON 结构） | P1 | 3h | ⏳（延期：JSON 模式下流式无增量解析价值） |
+| 6.7 | AI 错误重试与降级机制 | P1 | 2h | ✅ |
+| 6.8 | AI 结果缓存机制（按 JSON 结构缓存） | P1 | 1h | ✅ |
 
 **AI 调用示例**:
 ```typescript
@@ -321,14 +321,14 @@ const baziData: BaziAnalysis = JSON.parse(response.choices[0].message.content);
 
 | 序号 | 任务 | 优先级 | 预计工时 | 状态 |
 |-----|------|--------|---------|------|
-| 9.1 | 欢迎页 → 信息收集流程 | P0 | 2h | ⬜ |
-| 9.2 | 信息收集 → AI 八字分析流程（获取 BaziAnalysis JSON） | P0 | 2h | ⬜ |
-| 9.3 | 八字分析 → 风格选择流程 | P0 | 1h | ⬜ |
+| 9.1 | 欢迎页 → 信息收集流程 | P0 | 2h | ✅ |
+| 9.2 | 信息收集 → AI 八字分析流程（获取 BaziAnalysis JSON） | P0 | 2h | ✅ |
+| 9.3 | 八字分析 → 风格选择流程 | P0 | 1h | ✅ |
 | 9.4 | 修复跨系列解锁状态同步问题 | P0 | 1h | ✅ |
 | 9.5 | 详情页新增“回到首页”导航 | P1 | 1h | ✅ |
-| 9.5 | 名字列表 → 支付解锁流程 | P0 | 2h | ⬜ |
-| 9.6 | 解锁 → 名字详情流程（渲染完整 JSON） | P0 | 1h | ⬜ |
-| 9.7 | 收藏/选定名字流程 | P1 | 1h | ⬜ |
+| 9.5 | 名字列表 → 支付解锁流程 | P0 | 2h | ✅ |
+| 9.6 | 解锁 → 名字详情流程（渲染完整 JSON） | P0 | 1h | ✅ |
+| 9.7 | 收藏/选定名字流程 | P1 | 1h | ✅ |
 
 ---
 
@@ -338,10 +338,10 @@ const baziData: BaziAnalysis = JSON.parse(response.choices[0].message.content);
 |-----|------|--------|---------|------|
 | 10.1 | 响应式布局适配 (320px-428px) | P0 | 3h | ✅ |
 | 10.2 | 页面切换动效 | P1 | 2h | ✅ |
-| 10.3 | AI 生成 Loading 状态优化 | P1 | 2h | ⬜ |
-| 10.4 | JSON 解析错误边界处理 | P1 | 2h | ⬜ |
-| 10.5 | 弱网环境适配 | P2 | 2h | ⬜ |
-| 10.6 | PWA 配置 | P2 | 2h | ⬜ |
+| 10.3 | AI 生成 Loading 状态优化 | P1 | 2h | ✅ |
+| 10.4 | JSON 解析错误边界处理 | P1 | 2h | ✅ |
+| 10.5 | 弱网环境适配 | P2 | 2h | ⏳（延期：P2 优先级） |
+| 10.6 | PWA 配置 | P2 | 2h | ⏳（延期：P2 优先级） |
 
 ---
 
@@ -354,11 +354,11 @@ const baziData: BaziAnalysis = JSON.parse(response.choices[0].message.content);
 | 11.3 | 风格选择卡片轮播组件 | P1 | 2h | ✅ |
 | 11.4 | 对话流内嵌名字预览卡片 | P0 | 3h | ✅ |
 | 11.5 | 移除自动跳转，优化交互流 | P0 | 1h | ✅ |
-| 11.6 | AI JSON 输出单元测试 | P0 | 3h | ⬜ |
-| 11.7 | 组件渲染测试（基于 mock JSON 数据） | P1 | 3h | ⬜ |
-| 11.8 | 集成测试 | P1 | 3h | ⬜ |
-| 11.9 | 支付流程测试 | P0 | 2h | ⬜ |
-| 11.10 | AI 生成测试（验证 JSON 结构） | P0 | 2h | ⬜ |
+| 11.6 | AI JSON 输出单元测试 | P0 | 3h | ✅ |
+| 11.7 | 组件渲染测试（基于 mock JSON 数据） | P1 | 3h | ✅ |
+| 11.8 | 集成测试 | P1 | 3h | ⏳（延期：依赖真实 AI 数据积累） |
+| 11.9 | 支付流程测试 | P0 | 2h | ✅ |
+| 11.10 | AI 生成测试（验证 JSON 结构） | P0 | 2h | ✅ |
 
 ---
 

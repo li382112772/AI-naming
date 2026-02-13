@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { AIBadge } from '@/components/ui/ai-badge';
 import { BaziPillarCard } from './BaziPillarCard';
 import { WuxingStats } from './WuxingStats';
+import { WuxingChart } from './WuxingChart';
 import { XiyongAnalysis } from './XiyongAnalysis';
 
 interface BaziAnalysisCardProps {
@@ -39,6 +40,11 @@ export const BaziAnalysisCard: React.FC<BaziAnalysisCardProps> = ({ data, classN
         {/* 2. Wuxing Stats */}
         <section>
           <WuxingStats wuxing={data.wuxing} />
+        </section>
+
+        {/* 2.5. Wuxing Radar Chart */}
+        <section>
+          <WuxingChart wuxing={data.wuxing} />
         </section>
 
         <div className="h-px bg-gray-100" />

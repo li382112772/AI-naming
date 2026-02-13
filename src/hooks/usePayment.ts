@@ -90,20 +90,13 @@ export const usePayment = create<PaymentState>((set, get) => ({
         // We need `useAI` to respect the unlocked status when generating new names!
         
         const currentUnlocked = session.unlockedSeries || [];
-        if (!currentUnlocked.includes('all')) {
-             // If we want to support partial unlock, we need to know which series.
-             // But for the user's report "I unlocked all", we should ensure 'all' is added.
-             // Let's just ensure 'all' is present for this fix.
-             await updateSession(session.id, { 
-                unlockedSeries: Array.from(new Set([...currentUnlocked, 'all']))
-             });
-        }
+        const newUnlocked = Array.from(new Set([...currentUnlocked, 'all']));
+        const unlockedNames = session.names?.map(n => ({ ...n, isLocked: false }));
 
-        // Update existing names
-        if (session.names) {
-          const unlockedNames = session.names.map(n => ({ ...n, isLocked: false }));
-          await updateSession(session.id, { names: unlockedNames });
-        }
+        await updateSession(session.id, {
+          unlockedSeries: newUnlocked,
+          ...(unlockedNames && { names: unlockedNames }),
+        });
       }
 
       return true;

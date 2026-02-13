@@ -8,6 +8,7 @@ import { AIBadge } from '@/components/ui/ai-badge';
 import { WuxingTag } from '@/components/ui/wuxing-tag';
 import { ChevronLeft, Share2, Heart, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface NameDetailPageProps {
   name: NameDetail;
@@ -17,6 +18,8 @@ interface NameDetailPageProps {
 
 export const NameDetailPage: React.FC<NameDetailPageProps> = ({ name, onBack, className }) => {
   const navigate = useNavigate();
+  const { addFavorite, removeFavorite, isFavorite } = useFavorites();
+  const favorited = isFavorite(name.id || '');
 
   return (
     <div className={cn("bg-white min-h-screen pb-20", className)}>
@@ -34,8 +37,11 @@ export const NameDetailPage: React.FC<NameDetailPageProps> = ({ name, onBack, cl
            >
              <Home className="w-5 h-5" />
            </button>
-           <button className="p-2 hover:bg-gray-100 rounded-full">
-             <Heart className="w-5 h-5 text-gray-600" />
+           <button
+             onClick={() => favorited ? removeFavorite(name.id!) : addFavorite(name)}
+             className="p-2 hover:bg-gray-100 rounded-full"
+           >
+             <Heart className={cn("w-5 h-5", favorited ? "text-red-500 fill-current" : "text-gray-600")} />
            </button>
            <button className="p-2 hover:bg-gray-100 rounded-full">
              <Share2 className="w-5 h-5 text-gray-600" />
