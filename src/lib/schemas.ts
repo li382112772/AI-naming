@@ -44,6 +44,14 @@ export const BaziAnalysisSchema = z.object({
   }),
   analysis: z.string(),
   suggestion: z.string(),
+  suggestedStyles: z.array(z.object({
+    id: z.string(),
+    title: z.string(),
+    desc: z.string(),
+    longDesc: z.string(),
+    colorTheme: z.enum(['emerald', 'blue', 'amber', 'purple', 'rose', 'cyan']),
+    rationale: z.string(),
+  })).optional(),
 });
 
 // Character Info Schema
@@ -59,6 +67,12 @@ export const CharacterInfoSchema = z.object({
     page: z.string(),
     original: z.string(),
   }),
+  etymology: z.object({
+    oracle: z.string().optional(),
+    bronze: z.string().optional(),
+    seal: z.string().optional(),
+    evolution: z.string().optional(),
+  }).optional(),
 });
 
 // Yinyun Info Schema

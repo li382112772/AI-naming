@@ -12,7 +12,7 @@ import { UnlockSuccess } from '@/components/payment/UnlockSuccess';
 import { cn } from '@/lib/utils';
 import { AIGenerating } from '@/components/ui/ai-generating';
 
-const STYLES = [
+const DEFAULT_STYLES = [
   { id: '诗词雅韵', label: '诗词雅韵' },
   { id: '山河大气', label: '山河大气' },
   { id: '现代简约', label: '现代简约' }
@@ -24,21 +24,26 @@ export const NameListPage: React.FC = () => {
   const { createOrder, simulatePayment, isProcessing } = usePayment();
   const { setStep } = useNamingFlow();
   const { generateNames, isGeneratingNames } = useAI();
-  
+
   const [showPayment, setShowPayment] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('');
 
   const currentSession = sessions.find(s => s.id === currentSessionId);
-  
+
+  // Resolve tabs: use AI-generated styles if available, else defaults
+  const STYLES = currentSession?.baziAnalysis?.suggestedStyles && currentSession.baziAnalysis.suggestedStyles.length > 0
+    ? currentSession.baziAnalysis.suggestedStyles.map(s => ({ id: s.id, label: s.title }))
+    : DEFAULT_STYLES;
+
   // Set initial active tab from session preference or first style
   useEffect(() => {
     if (currentSession?.stylePreference && !activeTab) {
       setActiveTab(currentSession.stylePreference);
-    } else if (!activeTab) {
+    } else if (!activeTab && STYLES.length > 0) {
       setActiveTab(STYLES[0].id);
     }
-  }, [currentSession?.stylePreference]);
+  }, [currentSession?.stylePreference, STYLES.length]);
 
   // Filter names by active tab
   const names = (currentSession?.names || []).filter(n => n.style === activeTab);
@@ -130,7 +135,7 @@ export const NameListPage: React.FC = () => {
              </h2>
            </div>
            <p className="text-sm text-blue-700 opacity-80">
-             基于 {activeTab} 风格，结合八字喜用神推荐
+             基于 {STYLES.find(s => s.id === activeTab)?.label ?? activeTab} 风格，结合八字喜用神推荐
            </p>
         </div>
 
@@ -152,12 +157,13 @@ export const NameListPage: React.FC = () => {
       </div>
 
       {/* Payment Modal */}
-      <PaymentModal 
+      <PaymentModal
         isOpen={showPayment}
         onClose={() => setShowPayment(false)}
         onPay={handlePayment}
         isProcessing={isProcessing}
-        seriesName={activeTab}
+        seriesName={STYLES.find(s => s.id === activeTab)?.label ?? activeTab}
+        allSeriesNames={STYLES.map(s => s.label)}
       />
 
       {/* Success Animation */}

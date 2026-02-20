@@ -9,6 +9,7 @@ export interface BabyInfo {
   birthCity: string;
   calendarType: CalendarType;
   isLeapMonth?: boolean; // For lunar
+  nameLength?: 1 | 2 | 3; // Number of characters in the given name (excluding surname)
 }
 
 export interface BabySession {
@@ -21,6 +22,15 @@ export interface BabySession {
   names?: NameDetail[];
   unlockedSeries?: string[]; // Series IDs
   selectedNameId?: string; // The final chosen name
+}
+
+export interface StyleSuggestion {
+  id: string;
+  title: string;
+  desc: string;
+  longDesc: string;
+  colorTheme: 'emerald' | 'blue' | 'amber' | 'purple' | 'rose' | 'cyan';
+  rationale: string;
 }
 
 export interface BaziAnalysis {
@@ -51,7 +61,7 @@ export interface BaziAnalysis {
     water: number;
     fire: number;
     earth: number;
-    goldValue: number; // 0-5 or 0-100 depending on AI output, assuming number
+    goldValue: number; // 0-100 strength
     woodValue: number;
     waterValue: number;
     fireValue: number;
@@ -68,6 +78,7 @@ export interface BaziAnalysis {
   };
   analysis: string;
   suggestion: string;
+  suggestedStyles?: StyleSuggestion[];
 }
 
 export interface NameDetail {
@@ -100,6 +111,12 @@ export interface CharacterInfo {
     strokes: number;
     page: string;
     original: string;
+  };
+  etymology?: {
+    oracle?: string;   // 甲骨文描述
+    bronze?: string;   // 金文描述
+    seal?: string;     // 小篆描述
+    evolution?: string; // 字形演变说明
   };
 }
 

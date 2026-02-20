@@ -10,24 +10,19 @@ interface WuxingChartProps {
 
 // Five elements in clockwise order starting from top
 const ELEMENTS = [
-  { key: 'fire', label: '火', color: '#ef4444', valueKey: 'fireValue' as const },
-  { key: 'earth', label: '土', color: '#d97706', valueKey: 'earthValue' as const },
-  { key: 'gold', label: '金', color: '#eab308', valueKey: 'goldValue' as const },
-  { key: 'water', label: '水', color: '#3b82f6', valueKey: 'waterValue' as const },
-  { key: 'wood', label: '木', color: '#22c55e', valueKey: 'woodValue' as const },
+  { key: 'fire', label: '火', color: '#ef4444', dimColor: '#fecaca', valueKey: 'fireValue' as const, countKey: 'fire' as const },
+  { key: 'earth', label: '土', color: '#d97706', dimColor: '#fde68a', valueKey: 'earthValue' as const, countKey: 'earth' as const },
+  { key: 'gold', label: '金', color: '#ca8a04', dimColor: '#fef08a', valueKey: 'goldValue' as const, countKey: 'gold' as const },
+  { key: 'water', label: '水', color: '#3b82f6', dimColor: '#bfdbfe', valueKey: 'waterValue' as const, countKey: 'water' as const },
+  { key: 'wood', label: '木', color: '#22c55e', dimColor: '#bbf7d0', valueKey: 'woodValue' as const, countKey: 'wood' as const },
 ]
 
-const SIZE = 200
+const SIZE = 220
 const CENTER = SIZE / 2
-const RADIUS = 70
-const LABEL_RADIUS = RADIUS + 24
+const RADIUS = 72
+const LABEL_RADIUS = RADIUS + 30
 
-// Convert polar angle to cartesian coords
-// Start from top (-90deg) and go clockwise
-function polarToCartesian(
-  angleDeg: number,
-  radius: number
-): { x: number; y: number } {
+function polarToCartesian(angleDeg: number, radius: number): { x: number; y: number } {
   const rad = ((angleDeg - 90) * Math.PI) / 180
   return {
     x: CENTER + radius * Math.cos(rad),
@@ -35,7 +30,6 @@ function polarToCartesian(
   }
 }
 
-// Generate polygon points string for SVG
 function polygonPoints(values: number[], maxValue: number): string {
   return values
     .map((v, i) => {
@@ -47,7 +41,6 @@ function polygonPoints(values: number[], maxValue: number): string {
     .join(' ')
 }
 
-// Grid ring polygon
 function gridRingPoints(ratio: number, count: number): string {
   return Array.from({ length: count }, (_, i) => {
     const angle = (360 / count) * i
@@ -56,18 +49,12 @@ function gridRingPoints(ratio: number, count: number): string {
   }).join(' ')
 }
 
-export const WuxingChart: React.FC<WuxingChartProps> = ({
-  wuxing,
-  className,
-}) => {
-  const values = useMemo(
-    () => ELEMENTS.map((e) => wuxing[e.valueKey] || 0),
-    [wuxing]
-  )
+export const WuxingChart: React.FC<WuxingChartProps> = ({ wuxing, className }) => {
+  const values = useMemo(() => ELEMENTS.map((e) => wuxing[e.valueKey] || 0), [wuxing])
+  const counts = useMemo(() => ELEMENTS.map((e) => wuxing[e.countKey] || 0), [wuxing])
 
   const maxValue = useMemo(() => {
     const max = Math.max(...values)
-    // Use a nice round max: at least 50, round up to nearest 25
     return max <= 50 ? 50 : Math.ceil(max / 25) * 25
   }, [values])
 
@@ -96,7 +83,7 @@ export const WuxingChart: React.FC<WuxingChartProps> = ({
             />
           ))}
 
-          {/* Axis lines from center to each vertex */}
+          {/* Axis lines */}
           {ELEMENTS.map((_, i) => {
             const angle = (360 / 5) * i
             const { x, y } = polarToCartesian(angle, RADIUS)
@@ -126,18 +113,22 @@ export const WuxingChart: React.FC<WuxingChartProps> = ({
             style={{ transformOrigin: `${CENTER}px ${CENTER}px` }}
           />
 
-          {/* Data points (dots) */}
+          {/* Data points (dots) with xiyong/jiyong coloring */}
           {values.map((v, i) => {
             const angle = (360 / 5) * i
             const ratio = Math.max(v, 0) / maxValue
             const { x, y } = polarToCartesian(angle, RADIUS * ratio)
+            const el = ELEMENTS[i]
+            const isXiyong = wuxing.xiyong.includes(el.label)
+            const isJiyong = wuxing.jiyong.includes(el.label)
+            const dotColor = isXiyong ? '#f59e0b' : isJiyong ? '#ef4444' : el.color
             return (
               <motion.circle
-                key={ELEMENTS[i].key}
+                key={el.key}
                 cx={x}
                 cy={y}
-                r={3.5}
-                fill={ELEMENTS[i].color}
+                r={isXiyong || isJiyong ? 5 : 3.5}
+                fill={dotColor}
                 stroke="white"
                 strokeWidth={1.5}
                 initial={{ opacity: 0, scale: 0 }}
@@ -147,37 +138,59 @@ export const WuxingChart: React.FC<WuxingChartProps> = ({
             )
           })}
 
-          {/* Labels: element name + value */}
+          {/* Labels: element name + count + value */}
           {ELEMENTS.map((el, i) => {
             const angle = (360 / 5) * i
             const { x, y } = polarToCartesian(angle, LABEL_RADIUS)
             const value = values[i]
+            const count = counts[i]
+            const isXiyong = wuxing.xiyong.includes(el.label)
+            const isJiyong = wuxing.jiyong.includes(el.label)
+            const labelColor = isXiyong ? '#d97706' : isJiyong ? '#dc2626' : el.color
+
             return (
               <g key={el.key}>
+                {/* Element name */}
                 <text
                   x={x}
-                  y={y - 5}
+                  y={y - 8}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  className="text-xs font-bold"
-                  fill={el.color}
+                  fontSize="13"
+                  fontWeight="bold"
+                  fill={labelColor}
                 >
                   {el.label}
+                  {isXiyong && ' ✦'}
+                  {isJiyong && ' ✗'}
                 </text>
+                {/* Count */}
                 <text
                   x={x}
-                  y={y + 9}
+                  y={y + 6}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  className="text-[10px]"
+                  fontSize="10"
                   fill="#6b7280"
                 >
-                  {value}
+                  {count}个·{value}
                 </text>
               </g>
             )
           })}
         </svg>
+      </div>
+
+      {/* Legend */}
+      <div className="flex justify-center gap-4 text-xs text-gray-500">
+        <span className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />
+          喜用神 ✦
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
+          忌用神 ✗
+        </span>
       </div>
     </div>
   )

@@ -71,7 +71,12 @@ export const FavoritesPage: React.FC = () => {
               
               <div className="flex items-center justify-between text-xs text-gray-400">
                 <span>综合评分: <span className="text-amber-500 font-bold">{name.score}</span></span>
-                <span>{new Date(parseInt(name.id)).toLocaleDateString()}</span>
+                <span>{(() => {
+                  // id format: "name-{timestamp}-{index}" or "mock-name-{timestamp}-{index}"
+                  const match = name.id?.match(/(\d{10,})/);
+                  const ts = match ? parseInt(match[1]) : NaN;
+                  return isNaN(ts) ? '收藏' : new Date(ts).toLocaleDateString('zh-CN');
+                })()}</span>
               </div>
 
               <button 

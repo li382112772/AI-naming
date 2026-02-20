@@ -1,15 +1,15 @@
-import { BabyInfo, Gender } from '@/types';
+import { BabyInfo } from '@/types';
 
 const JSON_INSTRUCTION = `You must output valid JSON only. Do not include any markdown formatting (like \`\`\`json), comments, or extra text.`;
 
 export const getBaziAnalysisPrompt = (info: BabyInfo) => {
   const { birthDate, birthTime, birthCity, gender } = info;
-  
+
   return {
     system: `You are an expert in traditional Chinese Bazi (Four Pillars of Destiny) and Wuxing (Five Elements).
 ${JSON_INSTRUCTION}
-Your task is to analyze the birth chart based on the provided birth information.`,
-    user: `Please analyze the Bazi for a ${gender === 'boy' ? 'boy' : 'girl'} born in ${birthCity} on ${birthDate} at ${birthTime}.
+Your task is to analyze the birth chart based on the provided birth information and recommend naming styles.`,
+    user: `Please analyze the Bazi for a ${gender === 'boy' ? 'boy' : 'girl'} born in ${birthCity || '未知'} on ${birthDate} at ${birthTime || '不详'}.
 
 Return a JSON object with the following structure:
 {
@@ -22,40 +22,52 @@ Return a JSON object with the following structure:
     "monthWuxing": "string",
     "dayWuxing": "string",
     "hourWuxing": "string",
-    "yearCanggan": "string (Hidden Stems)",
+    "yearCanggan": "string (Hidden Stems, e.g. 己丁)",
     "monthCanggan": "string",
     "dayCanggan": "string",
     "hourCanggan": "string",
-    "yearNayin": "string (Na Yin)",
+    "yearNayin": "string (Na Yin, e.g. 炉中火)",
     "monthNayin": "string",
     "dayNayin": "string",
     "hourNayin": "string",
-    "benming": "string (e.g. 炉中火)"
+    "benming": "string (zodiac animal, e.g. 龙)"
   },
   "wuxing": {
-    "gold": number (count),
-    "wood": number (count),
-    "water": number (count),
-    "fire": number (count),
-    "earth": number (count),
-    "goldValue": number (0-100 strength),
-    "woodValue": number (0-100 strength),
-    "waterValue": number (0-100 strength),
-    "fireValue": number (0-100 strength),
-    "earthValue": number (0-100 strength),
-    "xiyong": ["string", "string"] (Useful Gods/Elements),
-    "jiyong": ["string", "string"] (Unfavorable Elements),
-    "rizhu": "string" (Day Master),
-    "rizhuWuxing": "string",
-    "tonglei": ["string"] (Same elements),
-    "yilei": ["string"] (Different elements),
-    "tongleiScore": number,
-    "yileiScore": number,
-    "wangshuai": "string" (Strength of Day Master, e.g. 身旺/身弱)
+    "gold": number (count of gold element in 8 stems, 0-8),
+    "wood": number,
+    "water": number,
+    "fire": number,
+    "earth": number,
+    "goldValue": number (overall strength 0-100),
+    "woodValue": number,
+    "waterValue": number,
+    "fireValue": number,
+    "earthValue": number,
+    "xiyong": ["string", "string"] (Favorable/Useful Gods elements, e.g. ["火","土"]),
+    "jiyong": ["string", "string"] (Unfavorable elements),
+    "rizhu": "string" (Day Master heavenly stem, e.g. 戊),
+    "rizhuWuxing": "string" (Day Master's element, e.g. 土),
+    "tonglei": ["string"] (elements of same category as Day Master, supporting it),
+    "yilei": ["string"] (elements of different category, opposing/restraining Day Master),
+    "tongleiScore": number (combined strength of same-category elements, 0-100),
+    "yileiScore": number (combined strength of opposing elements, 0-100),
+    "wangshuai": "string" (Strength assessment: 身旺/身弱/身强/中和 etc.)
   },
-  "analysis": "string (Brief summary of the Bazi chart, approx 100 words)",
-  "suggestion": "string (Naming advice based on Bazi, approx 50 words)"
-}`
+  "analysis": "string (Brief summary of the Bazi chart in Chinese, approx 100 characters)",
+  "suggestion": "string (Naming advice based on Bazi in Chinese, approx 50 characters)",
+  "suggestedStyles": [
+    {
+      "id": "string (unique slug, e.g. shici_yayun)",
+      "title": "string (style name in Chinese, 4-6 chars, e.g. 诗意天成)",
+      "desc": "string (short description, within 20 chars)",
+      "longDesc": "string (detailed description, within 40 chars)",
+      "colorTheme": "string (one of: emerald, blue, amber, purple, rose, cyan)",
+      "rationale": "string (why this style fits this baby's Bazi, within 30 chars)"
+    }
+  ]
+}
+
+For suggestedStyles: generate exactly 3 creative naming styles tailored to this baby's Bazi and xiyong elements. Each style should be distinct in aesthetic. Choose colorTheme based on the style's mood. Make styles feel personalized, not generic.`
   };
 };
 
@@ -65,50 +77,60 @@ export const getNameGenerationPrompt = (
   stylePreference: string,
   count: number = 6
 ) => {
+  const nameLength = info.nameLength ?? 2;
+  const nameLengthDesc = nameLength === 1 ? '一个字（不含姓氏）' : nameLength === 2 ? '两个字（不含姓氏）' : '三个字（不含姓氏）';
+
   return {
-    system: `You are a professional Chinese Naming Master with deep knowledge of Shijing, Chuci, Tang Poems, and Song Lyrics.
+    system: `You are a professional Chinese Naming Master with deep knowledge of Shijing, Chuci, Tang Poems, Song Lyrics, and classical Chinese literature.
 ${JSON_INSTRUCTION}
-You need to generate ${count} names for a ${info.gender === 'boy' ? 'boy' : 'girl'} based on their Bazi and the user's preference.`,
+You need to generate ${count} names for a ${info.gender === 'boy' ? 'boy' : 'girl'} based on their Bazi and the user's preference.
+IMPORTANT: Each name must be exactly ${nameLength} Chinese character(s) long (excluding surname). Do not generate names of other lengths.`,
     user: `Baby Info:
-Gender: ${info.gender}
+Gender: ${info.gender === 'boy' ? '男' : '女'}
 Birth: ${info.birthDate} ${info.birthTime}
 Bazi Summary: ${baziSummary}
 Style Preference: ${stylePreference}
+Required name length: ${nameLengthDesc}
 
-Generate ${count} unique Chinese names.
+Generate ${count} unique Chinese names, each exactly ${nameLength} character(s) (excluding surname).
 Return a JSON array where each object has this structure:
 {
-  "name": "string (The full name, excluding surname)",
-  "pinyin": "string (e.g. mù zé)",
-  "meaning": "string (Overall meaning of the name)",
-  "source": "string (Source of the name, e.g. poem title)",
-  "wuxing": "string (e.g. 水水)",
-  "baziMatch": "string (How it matches Bazi)",
-  "score": number (0-100),
-  "uniqueness": "string (High/Medium/Low)",
-  "uniquenessCount": "string (Estimated count)",
-  "personalizedMeaning": "string (Meaning tailored to this baby)",
+  "name": "string (The given name only, exactly ${nameLength} character(s), excluding surname)",
+  "pinyin": "string (space-separated pinyin, e.g. mù zé)",
+  "meaning": "string (Overall meaning of the name in Chinese)",
+  "source": "string (Classical source of the name, e.g. 《诗经·关雎》)",
+  "wuxing": "string (Five elements of name characters, e.g. 水木)",
+  "baziMatch": "string (How it matches Bazi xiyong elements)",
+  "score": number (0-100, overall rating),
+  "uniqueness": "string (重名度: 极低/低/较低/中/较高/高)",
+  "uniquenessCount": "string (Estimated same-name count, e.g. 1000+)",
+  "personalizedMeaning": "string (Personalized meaning tailored to this baby in Chinese)",
   "yinyun": {
-    "tone": "string",
-    "initials": "string",
-    "score": number,
-    "analysis": "string"
+    "tone": "string (tone pattern e.g. 仄平)",
+    "initials": "string (initials combination e.g. mz)",
+    "score": number (phonetic beauty score 0-100),
+    "analysis": "string (phonetic analysis in Chinese)"
   },
   "characters": [
     {
-      "char": "string",
-      "pinyin": "string",
-      "wuxing": "string",
-      "meaning": "string",
-      "explanation": "string",
-      "source": "string",
+      "char": "string (single character)",
+      "pinyin": "string (pinyin with tone mark)",
+      "wuxing": "string (this character's element)",
+      "meaning": "string (core meaning in Chinese, 10-20 chars)",
+      "explanation": "string (rich character explanation: include (1) original meaning and composition/structure 字形结构, (2) cultural connotations 文化内涵, (3) classical usage example with quote. Total 60-100 chars in Chinese.)",
+      "source": "string (specific classical source, e.g. 《诗经·大雅·文王》)",
       "kangxi": {
-        "strokes": number,
-        "page": "string",
-        "original": "string"
+        "strokes": number (stroke count per Kangxi dictionary),
+        "page": "string (Kangxi dictionary page, e.g. 第523页)",
+        "original": "string (Kangxi dictionary original text. Provide the authentic classical Chinese definition. Format: '【字】《说文》...' followed by classical commentary. 50-120 chars.)"
+      },
+      "etymology": {
+        "oracle": "string (甲骨文字形描述: describe how this character looked in oracle bone script, what pictograph or ideograph it represented, 20-40 chars)",
+        "bronze": "string (金文字形描述: describe the bronze script form and any changes, 20-40 chars)",
+        "seal": "string (小篆字形描述: describe the small seal script standardized form, 20-40 chars)",
+        "evolution": "string (字形演变简述: brief summary of how the character evolved from ancient to modern, 20-50 chars)"
       }
     }
-    // ... for each character in the name
   ]
 }`
   };
@@ -151,7 +173,7 @@ Provide a detailed analysis in the following JSON format:
       "kangxi": {
         "strokes": number,
         "page": "string",
-        "original": "string"
+        "original": "string (Kangxi dictionary original text for this character)"
       }
     }
   ]

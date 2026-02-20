@@ -118,8 +118,16 @@ export const ChatPage: React.FC = () => {
     birthDate: '',
     birthTime: '',
     birthCity: '',
-    calendarType: 'solar'
+    calendarType: 'solar',
+    nameLength: 2,
   });
+
+  // Helper: resolve style display title from its ID
+  const getStyleTitle = (styleId?: string): string => {
+    if (!styleId) return styleId ?? ''
+    const found = currentSession?.baziAnalysis?.suggestedStyles?.find(s => s.id === styleId)
+    return found?.title ?? styleId
+  }
 
   // Inline Preview State
   const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
@@ -313,8 +321,28 @@ export const ChatPage: React.FC = () => {
                    </div>
                 </div>
 
-                <Button 
-                  type="submit" 
+                <div className="space-y-2">
+                  <Label className="text-gray-500 text-xs">名字字数</Label>
+                  <div className="flex gap-2">
+                    {([1, 2, 3] as const).map((len) => (
+                      <button
+                        key={len}
+                        type="button"
+                        onClick={() => updateForm('nameLength', len)}
+                        className={`flex-1 py-2 rounded-lg text-sm border transition-all ${
+                          formData.nameLength === len
+                            ? 'bg-amber-50 border-amber-500 text-amber-700 font-semibold'
+                            : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                        }`}
+                      >
+                        {len === 1 ? '单字名' : len === 2 ? '两字名' : '三字名'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
                   disabled={!formData.lastName || !formData.birthDate}
                   className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-orange-100 h-11 rounded-xl font-bold"
                 >
@@ -370,7 +398,7 @@ export const ChatPage: React.FC = () => {
               content="八字分析已完成！这是宝宝的命理分析报告："
             />
             <ErrorBoundary fallbackTitle="八字分析加载失败">
-              <BaziAnalysisCard data={currentSession.baziAnalysis} />
+              <BaziAnalysisCard data={currentSession.baziAnalysis} babyInfo={currentSession.babyInfo} />
             </ErrorBoundary>
             
             {currentStep === 'analysis-result' && (
@@ -394,9 +422,10 @@ export const ChatPage: React.FC = () => {
               role="assistant"
               content="请选择您喜欢的名字风格："
             />
-            <StyleSelectionCarousel 
-               onSelect={selectStyle} 
+            <StyleSelectionCarousel
+               onSelect={selectStyle}
                disabled={currentStep === 'generating-names' || currentStep === 'name-list'}
+               styles={currentSession?.baziAnalysis?.suggestedStyles}
             />
           </motion.div>
         )}
@@ -409,7 +438,7 @@ export const ChatPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <ChatBubble role="user" content={`我选择了：${currentSession?.stylePreference}`} />
+              <ChatBubble role="user" content={`我选择了：${getStyleTitle(currentSession?.stylePreference)}`} />
               <AIGenerating message={nameLoadingMsg} className="bg-white rounded-2xl" />
             </motion.div>
           )}
@@ -423,7 +452,7 @@ export const ChatPage: React.FC = () => {
            >
              <ChatBubble 
                role="assistant"
-               content={`为您生成了 ${styleNames.length} 个${currentSession?.stylePreference}风格的好名，首选推荐：`}
+               content={`为您生成了 ${styleNames.length} 个${getStyleTitle(currentSession?.stylePreference)}风格的好名，首选推荐：`}
              />
              <ErrorBoundary fallbackTitle="名字预览加载失败">
                <InlineNamePreview
@@ -504,12 +533,13 @@ export const ChatPage: React.FC = () => {
       </AnimatePresence>
 
       {/* Payment Modal for Inline "Next" */}
-      <PaymentModal 
+      <PaymentModal
         isOpen={showPayment}
         onClose={() => setShowPayment(false)}
         onPay={handlePayment}
         isProcessing={isProcessing}
-        seriesName={currentSession?.stylePreference}
+        seriesName={getStyleTitle(currentSession?.stylePreference)}
+        allSeriesNames={currentSession?.baziAnalysis?.suggestedStyles?.map(s => s.title)}
       />
 
       <UnlockSuccess show={showSuccess} />
