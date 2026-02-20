@@ -11,6 +11,7 @@ interface PaymentModalProps {
   onPay: (type: 'single' | 'all') => void;
   isProcessing: boolean;
   seriesName?: string;
+  allSeriesNames?: string[];
 }
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({
@@ -18,15 +19,21 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   onClose,
   onPay,
   isProcessing,
-  seriesName = '当前系列'
+  seriesName = '当前系列',
+  allSeriesNames,
 }) => {
   const [selectedPlan, setSelectedPlan] = useState<'single' | 'all'>('single');
+
+  // Build "all series" description dynamically from AI-generated style names
+  const allSeriesDesc = allSeriesNames && allSeriesNames.length > 0
+    ? `获取 ${allSeriesNames.join(' / ')} 全风格名字`
+    : '获取全部风格系列名字';
 
   const plans = [
     {
       id: 'single' as const,
       title: '解锁当前系列',
-      desc: `获取 ${seriesName} 全部 6 个名字详解`,
+      desc: `获取「${seriesName}」全部 6 个名字详解`,
       price: 9.9,
       originalPrice: 29.9,
       icon: Sparkles,
@@ -37,7 +44,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     {
       id: 'all' as const,
       title: '解锁全部系列',
-      desc: '获取诗词/山河/现代等全风格名字',
+      desc: allSeriesDesc,
       price: 19.9,
       originalPrice: 59.9,
       icon: Gem,
