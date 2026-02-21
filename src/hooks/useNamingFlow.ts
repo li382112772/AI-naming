@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { BabyInfo } from '@/types';
 import { useSessions } from './useSessions';
 import { useAI } from './useAI';
-import { usePayment } from './usePayment';
 
 type FlowStep = 'welcome' | 'input' | 'analyzing' | 'analysis-result' | 'style-selection' | 'generating-names' | 'name-list';
 
@@ -18,7 +17,7 @@ interface NamingFlowState {
   setStep: (step: FlowStep) => void;
 }
 
-export const useNamingFlow = create<NamingFlowState>((set, get) => ({
+export const useNamingFlow = create<NamingFlowState>((set) => ({
   currentStep: 'welcome',
 
   setStep: (step: FlowStep) => {
@@ -49,7 +48,7 @@ export const useNamingFlow = create<NamingFlowState>((set, get) => ({
       set({ currentStep: 'analysis-result' });
     } catch (error) {
       console.error('Flow Error:', error);
-      // Stay on input or show error toast
+      // Stay on 'analyzing' step — ChatPage will show the error bubble from useAI.error
     }
   },
 
@@ -59,7 +58,7 @@ export const useNamingFlow = create<NamingFlowState>((set, get) => ({
 
   selectStyle: async (style: string) => {
     const { generateNames } = useAI.getState();
-    const { updateSession, currentSessionId, sessions } = useSessions.getState();
+    const { updateSession, currentSessionId } = useSessions.getState();
 
     try {
       // 1. Update preference
@@ -77,6 +76,8 @@ export const useNamingFlow = create<NamingFlowState>((set, get) => ({
       set({ currentStep: 'name-list' });
     } catch (error) {
       console.error('Flow Error:', error);
+      // Revert to style-selection so the user can try again
+      set({ currentStep: 'style-selection' });
     }
   },
 

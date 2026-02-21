@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNamingFlow } from '@/hooks/useNamingFlow';
 import { useSessions } from '@/hooks/useSessions';
 import { useAI } from '@/hooks/useAI';
@@ -14,7 +14,7 @@ import { BabyInfo } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar, Clock, MapPin, Heart, Clock as ClockIcon, Menu } from 'lucide-react';
+import { Calendar, Clock, MapPin, Heart, Clock as ClockIcon, RotateCcw, AlertTriangle } from 'lucide-react';
 import { StyleSelectionCarousel } from '@/components/chat/StyleSelectionCarousel';
 import { InlineNamePreview } from '@/components/chat/InlineNamePreview';
 import { PaymentModal } from '@/components/payment/PaymentModal';
@@ -71,7 +71,7 @@ export const ChatPage: React.FC = () => {
   } = useNamingFlow();
   
   const { currentSessionId, sessions, updateSession } = useSessions();
-  const { isGeneratingBazi, isGeneratingNames, error: aiError } = useAI();
+  const { isGeneratingBazi, isGeneratingNames, error: aiError, retryAction, retry } = useAI();
   const { createOrder, simulatePayment, isProcessing } = usePayment();
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
 
@@ -134,15 +134,51 @@ export const ChatPage: React.FC = () => {
   const [showPayment, setShowPayment] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedNameForDetail, setSelectedNameForDetail] = useState<NameDetail | null>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
   const [isSelectionConfirmed, setIsSelectionConfirmed] = useState(false);
 
   // Auto scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [currentStep, isGeneratingBazi, isGeneratingNames, currentPreviewIndex, selectedNameForDetail, isSelectionConfirmed]);
+  }, [currentStep, isGeneratingBazi, isGeneratingNames, currentPreviewIndex, selectedNameForDetail, isSelectionConfirmed, aiError]);
 
-  // Remove auto-navigation to list
-  // Instead, we handle the 'name-list' step by showing the InlineNamePreview
+  // Handle viewing name detail — load on-demand if needed
+  const handleViewDetail = async (name: NameDetail) => {
+    setSelectedNameForDetail(name);
+    setDetailError(null);
+
+    if (name.hasFullDetail && name.characters.length > 0) {
+      return; // Already has detail
+    }
+
+    // Load detail on-demand
+    setIsLoadingDetail(true);
+    try {
+      const { generateNameDetail } = useAI.getState();
+      const detailedName = await generateNameDetail(name.id!);
+      setSelectedNameForDetail(detailedName);
+    } catch (err) {
+      setDetailError(err instanceof Error ? err.message : '加载失败');
+    } finally {
+      setIsLoadingDetail(false);
+    }
+  };
+
+  const handleRetryDetail = async () => {
+    if (!selectedNameForDetail) return;
+    setDetailError(null);
+    setIsLoadingDetail(true);
+    try {
+      const { generateNameDetail } = useAI.getState();
+      const detailedName = await generateNameDetail(selectedNameForDetail.id!);
+      setSelectedNameForDetail(detailedName);
+    } catch (err) {
+      setDetailError(err instanceof Error ? err.message : '加载失败');
+    } finally {
+      setIsLoadingDetail(false);
+    }
+  };
 
   const handleInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -374,7 +410,7 @@ export const ChatPage: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* 4.5. AI Error Display */}
+        {/* 4.5. AI Error Display with Retry */}
         {aiError && !isGeneratingBazi && !isGeneratingNames && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -382,7 +418,20 @@ export const ChatPage: React.FC = () => {
           >
             <ChatBubble
               role="assistant"
-              content={`抱歉，AI 分析过程中遇到问题：${aiError}。请重新尝试。`}
+              content={
+                <div className="space-y-3">
+                  <p>抱歉，AI 分析过程中遇到问题：{aiError}</p>
+                  {retryAction && (
+                    <button
+                      onClick={retry}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-full transition-colors"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      重新尝试
+                    </button>
+                  )}
+                </div>
+              }
             />
           </motion.div>
         )}
@@ -458,7 +507,7 @@ export const ChatPage: React.FC = () => {
                <InlineNamePreview
                  name={currentName}
                  onRefresh={handlePreviewRefresh}
-                 onViewDetail={() => setSelectedNameForDetail(currentName)}
+                 onViewDetail={() => handleViewDetail(currentName)}
                  onViewList={() => navigate('/names')}
                  onFavorite={() => {
                    if (isFavorite(currentName.id)) {
@@ -519,13 +568,33 @@ export const ChatPage: React.FC = () => {
               </button>
               
               <div className="h-full overflow-y-auto">
-                <ErrorBoundary fallbackTitle="名字详情加载失败">
-                  <NameDetailPage
-                    name={selectedNameForDetail}
-                    onBack={() => setSelectedNameForDetail(null)}
-                    className="min-h-full pb-0 pt-0"
-                  />
-                </ErrorBoundary>
+                {isLoadingDetail ? (
+                  <div className="h-full flex items-center justify-center">
+                    <AIGenerating message="正在加载详细解析..." className="bg-white rounded-2xl" />
+                  </div>
+                ) : detailError ? (
+                  <div className="h-full flex flex-col items-center justify-center p-6 space-y-4">
+                    <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center">
+                      <AlertTriangle className="w-7 h-7 text-red-500" />
+                    </div>
+                    <p className="text-gray-600 text-sm text-center">详情加载失败：{detailError}</p>
+                    <button
+                      onClick={handleRetryDetail}
+                      className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-full transition-colors"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      重试
+                    </button>
+                  </div>
+                ) : (
+                  <ErrorBoundary fallbackTitle="名字详情加载失败">
+                    <NameDetailPage
+                      name={selectedNameForDetail}
+                      onBack={() => setSelectedNameForDetail(null)}
+                      className="min-h-full pb-0 pt-0"
+                    />
+                  </ErrorBoundary>
+                )}
               </div>
             </motion.div>
           </motion.div>

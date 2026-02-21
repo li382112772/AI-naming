@@ -95,6 +95,7 @@ export interface NameDetail {
   uniquenessCount: string;
   yinyun: YinyunInfo;
   personalizedMeaning: string;
+  hasFullDetail?: boolean; // true = characters[] populated with kangxi/etymology; false/undefined = summary only
   isLocked?: boolean; // UI state
   seriesId?: string; // Which series it belongs to
   style?: string; // e.g. '诗词雅韵'

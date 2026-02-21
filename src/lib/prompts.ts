@@ -136,6 +136,169 @@ Return a JSON array where each object has this structure:
   };
 };
 
+/**
+ * Step 1 prompt: Generate 1 featured name (full detail) + 5 summary-only names
+ */
+export const getNameListPrompt = (
+  info: BabyInfo,
+  baziSummary: string,
+  stylePreference: string,
+) => {
+  const nameLength = info.nameLength ?? 2
+  const nameLengthDesc =
+    nameLength === 1
+      ? '一个字（不含姓氏）'
+      : nameLength === 2
+        ? '两个字（不含姓氏）'
+        : '三个字（不含姓氏）'
+
+  return {
+    system: `You are a professional Chinese Naming Master with deep knowledge of Shijing, Chuci, Tang Poems, Song Lyrics, and classical Chinese literature.
+${JSON_INSTRUCTION}
+You need to generate 6 names for a ${info.gender === 'boy' ? 'boy' : 'girl'} based on their Bazi and the user's preference.
+IMPORTANT: Each name must be exactly ${nameLength} Chinese character(s) long (excluding surname). Do not generate names of other lengths.
+The first (featured) name must include full character analysis. The remaining 5 names only need summary information.`,
+    user: `Baby Info:
+Gender: ${info.gender === 'boy' ? '男' : '女'}
+Birth: ${info.birthDate} ${info.birthTime}
+Bazi Summary: ${baziSummary}
+Style Preference: ${stylePreference}
+Required name length: ${nameLengthDesc}
+
+Generate 6 unique Chinese names, each exactly ${nameLength} character(s) (excluding surname).
+Return a JSON object with this structure:
+{
+  "featured": {
+    "name": "string (exactly ${nameLength} character(s), excluding surname)",
+    "pinyin": "string (space-separated pinyin, e.g. mù zé)",
+    "meaning": "string (Overall meaning in Chinese)",
+    "source": "string (Classical source, e.g. 《诗经·关雎》)",
+    "wuxing": "string (Five elements of name characters, e.g. 水木)",
+    "baziMatch": "string (How it matches Bazi xiyong elements)",
+    "score": number (0-100),
+    "uniqueness": "string (重名度: 极低/低/较低/中/较高/高)",
+    "uniquenessCount": "string (Estimated same-name count, e.g. 1000+)",
+    "personalizedMeaning": "string (Personalized meaning in Chinese)",
+    "yinyun": {
+      "tone": "string (tone pattern e.g. 仄平)",
+      "initials": "string (initials combination e.g. mz)",
+      "score": number (phonetic beauty score 0-100),
+      "analysis": "string (phonetic analysis in Chinese)"
+    },
+    "characters": [
+      {
+        "char": "string (single character)",
+        "pinyin": "string (pinyin with tone mark)",
+        "wuxing": "string (this character's element)",
+        "meaning": "string (core meaning in Chinese, 10-20 chars)",
+        "explanation": "string (rich character explanation: include (1) original meaning and composition/structure 字形结构, (2) cultural connotations 文化内涵, (3) classical usage example with quote. Total 60-100 chars in Chinese.)",
+        "source": "string (specific classical source, e.g. 《诗经·大雅·文王》)",
+        "kangxi": {
+          "strokes": number (stroke count per Kangxi dictionary),
+          "page": "string (Kangxi dictionary page, e.g. 第523页)",
+          "original": "string (Kangxi dictionary original text. Format: '【字】《说文》...' 50-120 chars.)"
+        },
+        "etymology": {
+          "oracle": "string (甲骨文字形描述, 20-40 chars)",
+          "bronze": "string (金文字形描述, 20-40 chars)",
+          "seal": "string (小篆字形描述, 20-40 chars)",
+          "evolution": "string (字形演变简述, 20-50 chars)"
+        }
+      }
+    ]
+  },
+  "others": [
+    {
+      "name": "string (exactly ${nameLength} character(s), excluding surname)",
+      "pinyin": "string",
+      "meaning": "string (Overall meaning in Chinese)",
+      "source": "string (Classical source)",
+      "wuxing": "string (Five elements)",
+      "baziMatch": "string (Bazi match explanation)",
+      "score": number (0-100),
+      "uniqueness": "string (重名度)",
+      "uniquenessCount": "string",
+      "personalizedMeaning": "string",
+      "yinyun": {
+        "tone": "string",
+        "initials": "string",
+        "score": number,
+        "analysis": "string"
+      }
+    }
+  ]
+}
+
+IMPORTANT:
+- "featured" must contain ONE name with COMPLETE character analysis including kangxi and etymology.
+- "others" must contain exactly 5 names with ONLY summary fields (no "characters" array).
+- All 6 names must be unique and distinct.
+- The featured name should be your top recommendation.`
+  }
+}
+
+/**
+ * Step 2 prompt: Generate full detail for a single name on-demand
+ */
+export const getNameDetailPrompt = (
+  name: string,
+  info: BabyInfo,
+  baziSummary: string,
+) => {
+  return {
+    system: `You are a professional Chinese Naming Master with deep knowledge of classical Chinese literature, Kangxi Dictionary, and Chinese character etymology.
+${JSON_INSTRUCTION}
+Generate detailed character analysis for the given name.`,
+    user: `Name to analyze: ${name}
+Baby Info:
+Gender: ${info.gender === 'boy' ? '男' : '女'}
+Birth: ${info.birthDate} ${info.birthTime}
+Bazi Summary: ${baziSummary}
+
+This name was already recommended for this baby. Now provide the complete character-level analysis.
+Return a JSON object with this structure:
+{
+  "name": "${name}",
+  "pinyin": "string (space-separated pinyin with tone marks)",
+  "meaning": "string (Overall meaning in Chinese)",
+  "source": "string (Classical source)",
+  "wuxing": "string (Five elements of name characters)",
+  "baziMatch": "string (How it matches Bazi)",
+  "score": number (0-100),
+  "uniqueness": "string (重名度: 极低/低/较低/中/较高/高)",
+  "uniquenessCount": "string",
+  "personalizedMeaning": "string",
+  "yinyun": {
+    "tone": "string",
+    "initials": "string",
+    "score": number,
+    "analysis": "string"
+  },
+  "characters": [
+    {
+      "char": "string (single character)",
+      "pinyin": "string (pinyin with tone mark)",
+      "wuxing": "string (this character's element)",
+      "meaning": "string (core meaning in Chinese, 10-20 chars)",
+      "explanation": "string (rich character explanation: (1) original meaning and 字形结构, (2) 文化内涵, (3) classical usage example with quote. 60-100 chars)",
+      "source": "string (specific classical source)",
+      "kangxi": {
+        "strokes": number (stroke count per Kangxi dictionary),
+        "page": "string (Kangxi dictionary page, e.g. 第523页)",
+        "original": "string (Kangxi dictionary original text. Format: '【字】《说文》...' 50-120 chars.)"
+      },
+      "etymology": {
+        "oracle": "string (甲骨文字形描述, 20-40 chars)",
+        "bronze": "string (金文字形描述, 20-40 chars)",
+        "seal": "string (小篆字形描述, 20-40 chars)",
+        "evolution": "string (字形演变简述, 20-50 chars)"
+      }
+    }
+  ]
+}`
+  }
+}
+
 export const getNameAnalysisPrompt = (name: string, info: BabyInfo) => {
   return {
     system: `You are a Chinese Naming Expert.

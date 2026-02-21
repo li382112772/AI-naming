@@ -11,6 +11,7 @@ import { PaymentModal } from '@/components/payment/PaymentModal';
 import { UnlockSuccess } from '@/components/payment/UnlockSuccess';
 import { cn } from '@/lib/utils';
 import { AIGenerating } from '@/components/ui/ai-generating';
+import { ErrorModal } from '@/components/ui/error-modal';
 
 const DEFAULT_STYLES = [
   { id: '诗词雅韵', label: '诗词雅韵' },
@@ -23,7 +24,7 @@ export const NameListPage: React.FC = () => {
   const { currentSessionId, sessions } = useSessions();
   const { createOrder, simulatePayment, isProcessing } = usePayment();
   const { setStep } = useNamingFlow();
-  const { generateNames, isGeneratingNames } = useAI();
+  const { generateNames, isGeneratingNames, error: aiError, retryAction, retry, clearError } = useAI();
 
   const [showPayment, setShowPayment] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -48,12 +49,17 @@ export const NameListPage: React.FC = () => {
   // Filter names by active tab
   const names = (currentSession?.names || []).filter(n => n.style === activeTab);
 
-  // Auto-generate if empty and not generating
+  // Auto-generate if empty and not generating (guard against infinite loop on error)
   useEffect(() => {
-    if (activeTab && names.length === 0 && !isGeneratingNames && currentSession?.baziAnalysis) {
+    if (activeTab && names.length === 0 && !isGeneratingNames && !aiError && currentSession?.baziAnalysis) {
        generateNames(activeTab).catch(console.error);
     }
-  }, [activeTab, names.length, isGeneratingNames, currentSession?.baziAnalysis]);
+  }, [activeTab, names.length, isGeneratingNames, aiError, currentSession?.baziAnalysis]);
+
+  // Clear error when switching tabs
+  useEffect(() => {
+    if (aiError) clearError();
+  }, [activeTab]);
 
   const handleBack = () => {
     setStep('style-selection');
@@ -146,9 +152,19 @@ export const NameListPage: React.FC = () => {
           </div>
         )}
 
+        {/* Error State */}
+        {aiError && !isGeneratingNames && names.length === 0 && (
+          <ErrorModal
+            isOpen
+            message={aiError}
+            onRetry={retryAction ? retry : undefined}
+            onClose={handleBack}
+          />
+        )}
+
         {/* Name List */}
         {!isGeneratingNames && names.length > 0 && (
-          <NameList 
+          <NameList
             names={names}
             onNameClick={handleNameClick}
             onUnlock={handleUnlockClick}

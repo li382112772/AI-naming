@@ -104,3 +104,24 @@ export const NameDetailSchema = z.object({
 
 // For list of names
 export const NameListSchema = z.array(NameDetailSchema);
+
+// Summary schema (no characters array — used for the 5 non-featured names)
+export const NameSummarySchema = z.object({
+  name: z.string(),
+  pinyin: z.string(),
+  meaning: z.string(),
+  source: z.string(),
+  wuxing: z.string(),
+  baziMatch: z.string(),
+  score: z.number(),
+  uniqueness: z.string(),
+  uniquenessCount: z.string(),
+  yinyun: YinyunInfoSchema,
+  personalizedMeaning: z.string(),
+});
+
+// Step 1 response: 1 featured name (full detail) + 5 summary-only names
+export const NameListResponseSchema = z.object({
+  featured: NameDetailSchema,
+  others: z.array(NameSummarySchema),
+});

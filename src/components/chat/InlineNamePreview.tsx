@@ -26,6 +26,11 @@ export const InlineNamePreview: React.FC<InlineNamePreviewProps> = ({
 }) => {
   const chars = name.name.split('')
   const pinyins = name.pinyin.split(' ')
+  // Fallback: derive per-char wuxing from the wuxing string when characters[] is empty (summary names)
+  const wuxingPerChar =
+    name.characters.length > 0
+      ? name.characters.map((c) => c.wuxing)
+      : name.wuxing.split('')
 
   return (
     <motion.div
@@ -46,9 +51,9 @@ export const InlineNamePreview: React.FC<InlineNamePreviewProps> = ({
               <div className="w-14 h-14 bg-white rounded-2xl shadow-sm border border-orange-100 flex items-center justify-center">
                 <span className="text-3xl font-serif font-bold text-gray-800">{char}</span>
               </div>
-              {/* Per-character wuxing from characters array */}
-              {name.characters[i]?.wuxing && (
-                <WuxingTag wuxing={name.characters[i].wuxing} size="xs" />
+              {/* Per-character wuxing (from characters[] or derived from wuxing string) */}
+              {wuxingPerChar[i] && (
+                <WuxingTag wuxing={wuxingPerChar[i]} size="xs" />
               )}
             </div>
           ))}

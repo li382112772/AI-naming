@@ -9,6 +9,7 @@ import { WuxingTag } from '@/components/ui/wuxing-tag'
 import { ChevronLeft, Share2, Heart, Home } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useFavorites } from '@/hooks/useFavorites'
+import { AIGenerating } from '@/components/ui/ai-generating'
 
 interface NameDetailPageProps {
   name: NameDetail
@@ -20,6 +21,15 @@ export const NameDetailPage: React.FC<NameDetailPageProps> = ({ name, onBack, cl
   const navigate = useNavigate()
   const { addFavorite, removeFavorite, isFavorite } = useFavorites()
   const favorited = isFavorite(name.id || '')
+
+  // Guard: if name only has summary data, show loading placeholder
+  if (!name.hasFullDetail || name.characters.length === 0) {
+    return (
+      <div className={cn('bg-gray-50 min-h-screen flex items-center justify-center', className)}>
+        <AIGenerating message="正在加载详细数据..." className="bg-white rounded-2xl" />
+      </div>
+    )
+  }
 
   return (
     <div className={cn('bg-gray-50 min-h-screen pb-24', className)}>

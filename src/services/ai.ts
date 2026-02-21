@@ -3,6 +3,8 @@ import { BabyInfo } from '@/types'
 import {
   getBaziAnalysisPrompt,
   getNameGenerationPrompt,
+  getNameListPrompt,
+  getNameDetailPrompt,
   getNameAnalysisPrompt,
 } from '@/lib/prompts'
 
@@ -15,7 +17,7 @@ const client = new OpenAI({
 })
 
 const MODEL = 'deepseek-chat'
-const MAX_RETRIES = 3
+const MAX_RETRIES = 2
 const BASE_DELAY = 1000
 
 // --- Retry helper (exponential backoff) ---
@@ -62,17 +64,23 @@ async function withRetry<T>(
 async function chatCompletion(
   system: string,
   user: string,
-  temperature = 0.7
+  temperature = 0.7,
+  timeoutMs = 30000,
 ): Promise<string> {
-  const response = await client.chat.completions.create({
-    model: MODEL,
-    messages: [
-      { role: 'system', content: system },
-      { role: 'user', content: user },
-    ],
-    temperature,
-    response_format: { type: 'json_object' },
-  })
+  const response = await client.chat.completions.create(
+    {
+      model: MODEL,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user },
+      ],
+      temperature,
+      response_format: { type: 'json_object' },
+    },
+    {
+      timeout: timeoutMs,
+    },
+  )
 
   const content = response.choices[0]?.message?.content
   if (!content) {
@@ -90,26 +98,52 @@ async function chatCompletion(
  */
 export async function analyzeBazi(info: BabyInfo): Promise<string> {
   const { system, user } = getBaziAnalysisPrompt(info)
-  return withRetry(() => chatCompletion(system, user, 0.7))
+  return withRetry(() => chatCompletion(system, user, 0.7, 30000))
 }
 
 /**
- * 调用 AI 生成名字列表
- * 返回原始 JSON 字符串（NameDetail[] 数组）
+ * 调用 AI 生成名字列表（1 个完整 + 5 个摘要）
+ * 返回原始 JSON 字符串 { featured: NameDetail, others: NameSummary[] }
+ */
+export async function generateNameList(
+  info: BabyInfo,
+  baziSummary: string,
+  style: string,
+): Promise<string> {
+  const { system, user } = getNameListPrompt(info, baziSummary, style)
+  return withRetry(() => chatCompletion(system, user, 0.8, 45000))
+}
+
+/**
+ * 调用 AI 生成单个名字的完整详情（按需加载）
+ * 返回原始 JSON 字符串（NameDetail 对象）
+ */
+export async function generateNameDetail(
+  name: string,
+  info: BabyInfo,
+  baziSummary: string,
+): Promise<string> {
+  const { system, user } = getNameDetailPrompt(name, info, baziSummary)
+  return withRetry(() => chatCompletion(system, user, 0.7, 30000))
+}
+
+/**
+ * 调用 AI 生成名字列表（旧版，6 个完整详情）
+ * @deprecated 使用 generateNameList() 代替
  */
 export async function generateNames(
   info: BabyInfo,
   baziSummary: string,
   style: string,
-  count: number = 6
+  count: number = 6,
 ): Promise<string> {
   const { system, user } = getNameGenerationPrompt(
     info,
     baziSummary,
     style,
-    count
+    count,
   )
-  return withRetry(() => chatCompletion(system, user, 0.8))
+  return withRetry(() => chatCompletion(system, user, 0.8, 45000))
 }
 
 /**
@@ -118,10 +152,10 @@ export async function generateNames(
  */
 export async function analyzeName(
   name: string,
-  info: BabyInfo
+  info: BabyInfo,
 ): Promise<string> {
   const { system, user } = getNameAnalysisPrompt(name, info)
-  return withRetry(() => chatCompletion(system, user, 0.7))
+  return withRetry(() => chatCompletion(system, user, 0.7, 30000))
 }
 
 // --- Utility ---
