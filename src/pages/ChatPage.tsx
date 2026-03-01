@@ -15,7 +15,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar, Clock, MapPin, Heart, Clock as ClockIcon, RotateCcw, AlertTriangle } from 'lucide-react';
-import { StyleSelectionCarousel } from '@/components/chat/StyleSelectionCarousel';
 import { InlineNamePreview } from '@/components/chat/InlineNamePreview';
 import { PaymentModal } from '@/components/payment/PaymentModal';
 import { UnlockSuccess } from '@/components/payment/UnlockSuccess';
@@ -62,12 +61,11 @@ export const ChatPage: React.FC = () => {
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const { 
-    currentStep, 
-    submitInfo, 
-    confirmAnalysis, 
-    selectStyle,
-    setStep 
+  const {
+    currentStep,
+    submitInfo,
+    proceedToNaming,
+    setStep
   } = useNamingFlow();
   
   const { currentSessionId, sessions, updateSession } = useSessions();
@@ -93,20 +91,9 @@ export const ChatPage: React.FC = () => {
     // Determine step based on session data
     if (currentSession.names && currentSession.names.length > 0) {
       if (currentStep !== 'name-list') setStep('name-list');
-    } else if (currentSession.stylePreference) {
-      // If style selected but no names, maybe we were interrupted?
-      // Or maybe just show selection to let them try again
-      if (currentStep !== 'style-selection') setStep('style-selection');
     } else if (currentSession.baziAnalysis) {
-      if (currentStep !== 'analysis-result' && currentStep !== 'style-selection') {
+      if (currentStep !== 'analysis-result' && currentStep !== 'generating-names') {
         setStep('analysis-result');
-      }
-    } else if (currentSession.babyInfo) {
-      // Info submitted but no analysis yet? 
-      // This is rare (interrupted during analysis), might need to re-trigger or show input
-      if (currentStep === 'input') {
-        // If we are in input, but have info, maybe we should just fill the form?
-        // For now, let's assume if we have session, we at least moved past input if we have analysis
       }
     }
   }, [currentSessionId, currentSession]); // Depend on ID switch or session update
@@ -437,49 +424,30 @@ export const ChatPage: React.FC = () => {
         )}
 
         {/* 5. Analysis Result */}
-        {(currentStep === 'analysis-result' || currentStep === 'style-selection' || currentStep === 'generating-names' || currentStep === 'name-list') && currentSession?.baziAnalysis && (
+        {(currentStep === 'analysis-result' || currentStep === 'generating-names' || currentStep === 'name-list') && currentSession?.baziAnalysis && (
           <motion.div
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
           >
-            <ChatBubble 
+            <ChatBubble
               role="assistant"
               content="八字分析已完成！这是宝宝的命理分析报告："
             />
             <ErrorBoundary fallbackTitle="八字分析加载失败">
               <BaziAnalysisCard data={currentSession.baziAnalysis} babyInfo={currentSession.babyInfo} />
             </ErrorBoundary>
-            
-            {currentStep === 'analysis-result' && (
+
+            {currentStep === 'analysis-result' && !isGeneratingNames && (
               <div className="mt-4 flex justify-center">
-                <Button onClick={confirmAnalysis} className="bg-blue-500 hover:bg-blue-600 rounded-full px-8 shadow-lg shadow-blue-200">
-                  下一步：选择起名风格
+                <Button onClick={proceedToNaming} className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 rounded-full px-8 shadow-lg shadow-orange-100">
+                  开始生成名字
                 </Button>
               </div>
             )}
           </motion.div>
         )}
 
-        {/* 6. Style Selection */}
-        {(currentStep === 'style-selection' || currentStep === 'generating-names' || currentStep === 'name-list') && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-4"
-          >
-            <ChatBubble 
-              role="assistant"
-              content="请选择您喜欢的名字风格："
-            />
-            <StyleSelectionCarousel
-               onSelect={selectStyle}
-               disabled={currentStep === 'generating-names' || currentStep === 'name-list'}
-               styles={currentSession?.baziAnalysis?.suggestedStyles}
-            />
-          </motion.div>
-        )}
-
-        {/* 7. Generating Names */}
+        {/* 6. Generating Names */}
         <AnimatePresence>
           {isGeneratingNames && (
             <motion.div
@@ -487,7 +455,6 @@ export const ChatPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <ChatBubble role="user" content={`我选择了：${getStyleTitle(currentSession?.stylePreference)}`} />
               <AIGenerating message={nameLoadingMsg} className="bg-white rounded-2xl" />
             </motion.div>
           )}
@@ -536,7 +503,7 @@ export const ChatPage: React.FC = () => {
            >
              <ChatBubble 
                role="assistant"
-               content={`太棒了！已为您选定名字「${currentSession.names.find(n => n.id === currentSession.selectedNameId)?.name}」。愿这个好名字伴随宝宝健康快乐成长！您可以点击右上角收藏夹查看或管理收藏的名字。`}
+               content={`太棒了！已为您选定名字「${(() => { const n = currentSession.names.find(n => n.id === currentSession.selectedNameId); return n ? (n.lastName ?? '') + n.name : ''; })()}」。愿这个好名字伴随宝宝健康快乐成长！您可以点击右上角收藏夹查看或管理收藏的名字。`}
              />
            </motion.div>
         )}

@@ -84,6 +84,7 @@ export interface BaziAnalysis {
 export interface NameDetail {
   id?: string; // Generated on client or by AI
   name: string;
+  lastName?: string; // 姓氏，用于拼接展示全名
   pinyin: string;
   characters: CharacterInfo[];
   meaning: string;
@@ -112,12 +113,6 @@ export interface CharacterInfo {
     strokes: number;
     page: string;
     original: string;
-  };
-  etymology?: {
-    oracle?: string;   // 甲骨文描述
-    bronze?: string;   // 金文描述
-    seal?: string;     // 小篆描述
-    evolution?: string; // 字形演变说明
   };
 }
 

@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useSessions } from '@/hooks/useSessions';
 import { useNamingFlow } from '@/hooks/useNamingFlow';
 import { ChevronLeft, Trash2, Clock, Plus } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
 export const SessionsPage: React.FC = () => {
   const navigate = useNavigate();
   const { sessions, loadSessions, deleteSession, setCurrentSession } = useSessions();
@@ -81,7 +79,7 @@ export const SessionsPage: React.FC = () => {
                     </span>
                     {session.selectedNameId && (
                       <span className="inline-block bg-amber-50 text-amber-600 text-[10px] px-2 py-0.5 rounded-full font-bold">
-                         已选定：{session.names.find(n => n.id === session.selectedNameId)?.name}
+                         已选定：{(() => { const n = session.names.find(n => n.id === session.selectedNameId); return n ? (n.lastName ?? session.babyInfo?.lastName ?? '') + n.name : ''; })()}
                       </span>
                     )}
                   </div>

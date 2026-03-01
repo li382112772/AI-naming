@@ -62,7 +62,7 @@ export const NameListPage: React.FC = () => {
   }, [activeTab]);
 
   const handleBack = () => {
-    setStep('style-selection');
+    setStep('name-list');
     navigate('/chat');
   };
 
@@ -148,7 +148,7 @@ export const NameListPage: React.FC = () => {
         {/* Loading State */}
         {isGeneratingNames && names.length === 0 && (
           <div className="py-10">
-             <AIGenerating message={`正在生成${activeTab}风格的名字...`} className="bg-white shadow-sm" />
+             <AIGenerating message={`正在生成${STYLES.find(s => s.id === activeTab)?.label ?? activeTab}风格的名字...`} className="bg-white shadow-sm" />
           </div>
         )}
 

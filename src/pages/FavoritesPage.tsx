@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFavorites } from '@/hooks/useFavorites';
 import { ChevronLeft, Trash2, Heart } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { fullName } from '@/lib/utils';
 import { WuxingTag } from '@/components/ui/wuxing-tag';
 
 export const FavoritesPage: React.FC = () => {
@@ -52,7 +52,7 @@ export const FavoritesPage: React.FC = () => {
             >
               <div className="flex justify-between items-start mb-2">
                 <div className="flex gap-3 items-center">
-                  <span className="text-2xl font-serif font-bold text-gray-800">{name.name}</span>
+                  <span className="text-2xl font-serif font-bold text-gray-800">{fullName(name)}</span>
                   <div className="flex gap-1">
                     {name.characters.map((char, i) => (
                       <WuxingTag key={i} wuxing={char.wuxing} size="xs" />

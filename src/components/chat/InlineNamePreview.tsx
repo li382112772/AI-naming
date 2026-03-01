@@ -3,7 +3,7 @@ import { NameDetail } from '@/types'
 import { motion } from 'framer-motion'
 import { Sparkles, RefreshCw, List, Heart, BookOpen, Wind, ChevronRight, Check } from 'lucide-react'
 import { WuxingTag } from '@/components/ui/wuxing-tag'
-import { cn } from '@/lib/utils'
+import { cn, fullName } from '@/lib/utils'
 
 interface InlineNamePreviewProps {
   name: NameDetail
@@ -24,7 +24,8 @@ export const InlineNamePreview: React.FC<InlineNamePreviewProps> = ({
   onSelect,
   isFavorite,
 }) => {
-  const chars = name.name.split('')
+  const displayName = fullName(name)
+  const chars = displayName.split('')
   const pinyins = name.pinyin.split(' ')
   // Fallback: derive per-char wuxing from the wuxing string when characters[] is empty (summary names)
   const wuxingPerChar =
@@ -43,25 +44,31 @@ export const InlineNamePreview: React.FC<InlineNamePreviewProps> = ({
       <div className="bg-gradient-to-b from-orange-50 to-white pt-7 pb-3 px-6">
         {/* Characters */}
         <div className="flex justify-center gap-5 mb-4">
-          {chars.map((char, i) => (
-            <div key={i} className="flex flex-col items-center gap-1.5">
-              <span className="text-xs text-gray-400 font-medium tracking-widest">
-                {pinyins[i] ?? ''}
-              </span>
-              <div className="w-14 h-14 bg-white rounded-2xl shadow-sm border border-orange-100 flex items-center justify-center">
-                <span className="text-3xl font-serif font-bold text-gray-800">{char}</span>
+          {chars.map((char, i) => {
+            const surnameLen = name.lastName?.length ?? 0
+            const isGivenName = i >= surnameLen
+            const givenIdx = i - surnameLen
+            return (
+              <div key={i} className="flex flex-col items-center gap-1.5">
+                <span className="text-xs text-gray-400 font-medium tracking-widest">
+                  {isGivenName ? (pinyins[givenIdx] ?? '\u00A0') : '\u00A0'}
+                </span>
+                <div className="w-14 h-14 bg-white rounded-2xl shadow-sm border border-orange-100 flex items-center justify-center">
+                  <span className="text-3xl font-serif font-bold text-gray-800">{char}</span>
+                </div>
+                {isGivenName && wuxingPerChar[givenIdx] ? (
+                  <WuxingTag wuxing={wuxingPerChar[givenIdx]} size="xs" />
+                ) : (
+                  <div className="h-5" /> /* spacer to align with wuxing tags */
+                )}
               </div>
-              {/* Per-character wuxing (from characters[] or derived from wuxing string) */}
-              {wuxingPerChar[i] && (
-                <WuxingTag wuxing={wuxingPerChar[i]} size="xs" />
-              )}
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Name + rating badge */}
         <div className="flex items-center justify-center gap-2.5 mb-1">
-          <span className="text-base font-bold text-gray-600 font-serif tracking-[0.25em]">{name.name}</span>
+          <span className="text-base font-bold text-gray-600 font-serif tracking-[0.25em]">{displayName}</span>
           <div className="flex items-center gap-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm">
             <Sparkles className="w-2.5 h-2.5" />
             <span>大吉</span>

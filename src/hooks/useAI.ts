@@ -165,10 +165,13 @@ export const useAI = create<AIState>((set, get) => ({
         session.unlockedSeries?.includes('all') ||
         session.unlockedSeries?.includes(style)
 
+      const lastName = session.babyInfo.lastName
+
       // Build featured name (full detail)
       const featuredName: NameDetail = {
         ...data.featured,
         id: `name-${Date.now()}-0`,
+        lastName,
         hasFullDetail: true,
         isLocked: false, // First name is always free
         style,
@@ -178,6 +181,7 @@ export const useAI = create<AIState>((set, get) => ({
       const summaryNames: NameDetail[] = data.others.map((summary, i) => ({
         ...summary,
         id: `name-${Date.now()}-${i + 1}`,
+        lastName,
         characters: [], // Empty — detail not yet loaded
         hasFullDetail: false,
         isLocked: isUnlocked ? false : true,

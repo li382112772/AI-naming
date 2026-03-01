@@ -123,12 +123,6 @@ Return a JSON array where each object has this structure:
         "strokes": number (stroke count per Kangxi dictionary),
         "page": "string (Kangxi dictionary page, e.g. 第523页)",
         "original": "string (Kangxi dictionary original text. Provide the authentic classical Chinese definition. Format: '【字】《说文》...' followed by classical commentary. 50-120 chars.)"
-      },
-      "etymology": {
-        "oracle": "string (甲骨文字形描述: describe how this character looked in oracle bone script, what pictograph or ideograph it represented, 20-40 chars)",
-        "bronze": "string (金文字形描述: describe the bronze script form and any changes, 20-40 chars)",
-        "seal": "string (小篆字形描述: describe the small seal script standardized form, 20-40 chars)",
-        "evolution": "string (字形演变简述: brief summary of how the character evolved from ancient to modern, 20-50 chars)"
       }
     }
   ]
@@ -197,12 +191,6 @@ Return a JSON object with this structure:
           "strokes": number (stroke count per Kangxi dictionary),
           "page": "string (Kangxi dictionary page, e.g. 第523页)",
           "original": "string (Kangxi dictionary original text. Format: '【字】《说文》...' 50-120 chars.)"
-        },
-        "etymology": {
-          "oracle": "string (甲骨文字形描述, 20-40 chars)",
-          "bronze": "string (金文字形描述, 20-40 chars)",
-          "seal": "string (小篆字形描述, 20-40 chars)",
-          "evolution": "string (字形演变简述, 20-50 chars)"
         }
       }
     ]
@@ -230,7 +218,7 @@ Return a JSON object with this structure:
 }
 
 IMPORTANT:
-- "featured" must contain ONE name with COMPLETE character analysis including kangxi and etymology.
+- "featured" must contain ONE name with COMPLETE character analysis including kangxi.
 - "others" must contain exactly 5 names with ONLY summary fields (no "characters" array).
 - All 6 names must be unique and distinct.
 - The featured name should be your top recommendation.`
@@ -286,12 +274,6 @@ Return a JSON object with this structure:
         "strokes": number (stroke count per Kangxi dictionary),
         "page": "string (Kangxi dictionary page, e.g. 第523页)",
         "original": "string (Kangxi dictionary original text. Format: '【字】《说文》...' 50-120 chars.)"
-      },
-      "etymology": {
-        "oracle": "string (甲骨文字形描述, 20-40 chars)",
-        "bronze": "string (金文字形描述, 20-40 chars)",
-        "seal": "string (小篆字形描述, 20-40 chars)",
-        "evolution": "string (字形演变简述, 20-50 chars)"
       }
     }
   ]

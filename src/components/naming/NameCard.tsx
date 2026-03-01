@@ -1,6 +1,6 @@
 import React from 'react';
 import { NameDetail } from '@/types';
-import { cn } from '@/lib/utils';
+import { cn, fullName } from '@/lib/utils';
 import { WuxingTag } from '@/components/ui/wuxing-tag';
 import { Lock } from 'lucide-react';
 
@@ -30,7 +30,7 @@ export const NameCard: React.FC<NameCardProps> = ({ name, onClick, className }) 
             "text-2xl font-bold font-serif tracking-wide",
             isLocked ? "text-gray-400" : "text-gray-900"
           )}>
-            {name.name}
+            {fullName(name)}
           </h3>
           <p className="text-sm text-gray-500 mt-1">{name.pinyin}</p>
         </div>

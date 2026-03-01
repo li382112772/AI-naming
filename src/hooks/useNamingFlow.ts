@@ -3,7 +3,7 @@ import { BabyInfo } from '@/types';
 import { useSessions } from './useSessions';
 import { useAI } from './useAI';
 
-type FlowStep = 'welcome' | 'input' | 'analyzing' | 'analysis-result' | 'style-selection' | 'generating-names' | 'name-list';
+type FlowStep = 'welcome' | 'input' | 'analyzing' | 'analysis-result' | 'generating-names' | 'name-list';
 
 interface NamingFlowState {
   currentStep: FlowStep;
@@ -11,7 +11,7 @@ interface NamingFlowState {
   // Actions
   startFlow: () => void;
   submitInfo: (info: BabyInfo) => Promise<void>;
-  confirmAnalysis: () => void;
+  proceedToNaming: () => Promise<void>;
   selectStyle: (style: string) => Promise<void>;
   resetFlow: () => void;
   setStep: (step: FlowStep) => void;
@@ -37,23 +37,52 @@ export const useNamingFlow = create<NamingFlowState>((set) => ({
     try {
       // 1. Create Session
       await createSession(info);
-      
+
       // 2. Move to analyzing
       set({ currentStep: 'analyzing' });
 
-      // 3. Trigger AI
-      await generateBazi();
+      // 3. Trigger AI bazi analysis
+      const baziResult = await generateBazi();
 
-      // 4. Move to result
+      // 4. Show analysis result briefly, then auto-proceed to name generation
       set({ currentStep: 'analysis-result' });
+
+      // 5. Auto-select first style and generate names
+      const firstStyle = baziResult.suggestedStyles?.[0];
+      if (firstStyle) {
+        const { updateSession, currentSessionId } = useSessions.getState();
+        if (currentSessionId) {
+          await updateSession(currentSessionId, { stylePreference: firstStyle.id });
+        }
+        set({ currentStep: 'generating-names' });
+        const { generateNames } = useAI.getState();
+        await generateNames(firstStyle.id);
+        set({ currentStep: 'name-list' });
+      }
     } catch (error) {
       console.error('Flow Error:', error);
-      // Stay on 'analyzing' step — ChatPage will show the error bubble from useAI.error
+      // Stay on current step — ChatPage will show the error bubble from useAI.error
     }
   },
 
-  confirmAnalysis: () => {
-    set({ currentStep: 'style-selection' });
+  proceedToNaming: async () => {
+    const { generateNames } = useAI.getState();
+    const { sessions, currentSessionId, updateSession } = useSessions.getState();
+    const session = sessions.find((s) => s.id === currentSessionId);
+    const firstStyle = session?.baziAnalysis?.suggestedStyles?.[0];
+    if (!firstStyle) return;
+
+    try {
+      if (currentSessionId) {
+        await updateSession(currentSessionId, { stylePreference: firstStyle.id });
+      }
+      set({ currentStep: 'generating-names' });
+      await generateNames(firstStyle.id);
+      set({ currentStep: 'name-list' });
+    } catch (error) {
+      console.error('Flow Error:', error);
+      set({ currentStep: 'analysis-result' });
+    }
   },
 
   selectStyle: async (style: string) => {
@@ -76,8 +105,8 @@ export const useNamingFlow = create<NamingFlowState>((set) => ({
       set({ currentStep: 'name-list' });
     } catch (error) {
       console.error('Flow Error:', error);
-      // Revert to style-selection so the user can try again
-      set({ currentStep: 'style-selection' });
+      // Revert to analysis-result so the user can try again
+      set({ currentStep: 'analysis-result' });
     }
   },
 

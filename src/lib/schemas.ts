@@ -67,12 +67,6 @@ export const CharacterInfoSchema = z.object({
     page: z.string(),
     original: z.string(),
   }),
-  etymology: z.object({
-    oracle: z.string().optional(),
-    bronze: z.string().optional(),
-    seal: z.string().optional(),
-    evolution: z.string().optional(),
-  }).optional(),
 });
 
 // Yinyun Info Schema

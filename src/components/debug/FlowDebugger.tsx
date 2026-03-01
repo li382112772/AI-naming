@@ -6,7 +6,7 @@ import { usePayment } from '@/hooks/usePayment';
 import { Button } from '@/components/ui/button';
 
 export const FlowDebugger: React.FC = () => {
-  const { currentStep, startFlow, submitInfo, confirmAnalysis, selectStyle, resetFlow } = useNamingFlow();
+  const { currentStep, startFlow, submitInfo, proceedToNaming, resetFlow } = useNamingFlow();
   const { currentSessionId, sessions } = useSessions();
   const { isGeneratingBazi, isGeneratingNames } = useAI();
   const { createOrder, simulatePayment, isProcessing } = usePayment();
@@ -27,9 +27,7 @@ export const FlowDebugger: React.FC = () => {
           calendarType: 'solar'
         });
       } else if (currentStep === 'analysis-result') {
-        confirmAnalysis();
-      } else if (currentStep === 'style-selection') {
-        await selectStyle('诗词雅韵');
+        await proceedToNaming();
       }
     } catch (e) {
       console.error(e);
@@ -42,7 +40,7 @@ export const FlowDebugger: React.FC = () => {
       const orderId = await createOrder(9.9, 'all');
       await simulatePayment(orderId);
       alert('Unlocked successfully!');
-    } catch (e) {
+    } catch {
       alert('Unlock failed');
     }
   };

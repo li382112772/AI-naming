@@ -1,6 +1,6 @@
 import React from 'react'
 import { NameDetail } from '@/types'
-import { cn } from '@/lib/utils'
+import { cn, fullName } from '@/lib/utils'
 import { NameScore } from './NameScore'
 import { CharacterAnalysis } from './CharacterAnalysis'
 import { YinyunAnalysis } from './YinyunAnalysis'
@@ -41,7 +41,7 @@ export const NameDetailPage: React.FC<NameDetailPageProps> = ({ name, onBack, cl
         >
           <ChevronLeft className="w-5 h-5 text-gray-600" />
         </button>
-        <h1 className="text-xl font-bold text-gray-800 font-serif tracking-widest">{name.name}</h1>
+        <h1 className="text-xl font-bold text-gray-800 font-serif tracking-widest">{fullName(name)}</h1>
         <div className="flex gap-1">
           <button
             onClick={() => navigate('/')}
@@ -70,6 +70,13 @@ export const NameDetailPage: React.FC<NameDetailPageProps> = ({ name, onBack, cl
           {/* Gradient hero area */}
           <div className="bg-gradient-to-b from-amber-50 to-white pt-7 pb-5 px-6">
             <div className="flex justify-center gap-6 mb-4">
+              {name.lastName && (
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="text-6xl font-serif font-bold text-gray-800 leading-none">{name.lastName}</div>
+                  <div className="text-xs text-gray-400 tracking-widest">&nbsp;</div>
+                  <div className="h-5" /> {/* spacer to align with wuxing tags */}
+                </div>
+              )}
               {name.characters.map((char, i) => (
                 <div key={i} className="flex flex-col items-center gap-1.5">
                   <div className="text-6xl font-serif font-bold text-gray-800 leading-none">{char.char}</div>
@@ -81,7 +88,7 @@ export const NameDetailPage: React.FC<NameDetailPageProps> = ({ name, onBack, cl
 
             {/* Full name + overall rating */}
             <div className="flex items-center justify-center gap-3">
-              <span className="text-base font-semibold text-gray-500 font-serif tracking-[0.2em]">{name.name}</span>
+              <span className="text-base font-semibold text-gray-500 font-serif tracking-[0.2em]">{fullName(name)}</span>
               <span className="text-xs bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2.5 py-1 rounded-full font-semibold shadow-sm">
                 ✨ 大吉
               </span>

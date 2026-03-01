@@ -59,35 +59,71 @@ async function withRetry<T>(
   throw lastError!
 }
 
+// --- Logging helper ---
+
+function logRequest(label: string, startTime: number, response: string) {
+  const duration = Date.now() - startTime
+  const preview = response.length > 120 ? response.slice(0, 120) + '...' : response
+  console.log(
+    `%c[AI] %c${label} %c${duration}ms %c${response.length} chars`,
+    'color: #6366f1; font-weight: bold',
+    'color: #059669',
+    'color: #d97706',
+    'color: #64748b',
+    `\n  Preview: ${preview}`,
+  )
+}
+
+function logError(label: string, startTime: number, error: unknown) {
+  const duration = Date.now() - startTime
+  console.error(
+    `%c[AI] %c${label} FAILED %c${duration}ms`,
+    'color: #6366f1; font-weight: bold',
+    'color: #ef4444; font-weight: bold',
+    'color: #d97706',
+    '\n  Error:',
+    error,
+  )
+}
+
 // --- Core API call helper ---
 
 async function chatCompletion(
+  label: string,
   system: string,
   user: string,
   temperature = 0.7,
   timeoutMs = 30000,
 ): Promise<string> {
-  const response = await client.chat.completions.create(
-    {
-      model: MODEL,
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: user },
-      ],
-      temperature,
-      response_format: { type: 'json_object' },
-    },
-    {
-      timeout: timeoutMs,
-    },
-  )
+  const startTime = Date.now()
 
-  const content = response.choices[0]?.message?.content
-  if (!content) {
-    throw new Error('AI 返回了空响应')
+  try {
+    const response = await client.chat.completions.create(
+      {
+        model: MODEL,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
+        temperature,
+        response_format: { type: 'json_object' },
+      },
+      {
+        timeout: timeoutMs,
+      },
+    )
+
+    const content = response.choices[0]?.message?.content
+    if (!content) {
+      throw new Error('AI 返回了空响应')
+    }
+
+    logRequest(label, startTime, content)
+    return content
+  } catch (error) {
+    logError(label, startTime, error)
+    throw error
   }
-
-  return content
 }
 
 // --- Public API ---
@@ -98,7 +134,7 @@ async function chatCompletion(
  */
 export async function analyzeBazi(info: BabyInfo): Promise<string> {
   const { system, user } = getBaziAnalysisPrompt(info)
-  return withRetry(() => chatCompletion(system, user, 0.7, 30000))
+  return withRetry(() => chatCompletion('analyzeBazi', system, user, 0.7, 30000))
 }
 
 /**
@@ -111,7 +147,7 @@ export async function generateNameList(
   style: string,
 ): Promise<string> {
   const { system, user } = getNameListPrompt(info, baziSummary, style)
-  return withRetry(() => chatCompletion(system, user, 0.8, 45000))
+  return withRetry(() => chatCompletion('generateNameList', system, user, 0.8, 45000))
 }
 
 /**
@@ -124,7 +160,7 @@ export async function generateNameDetail(
   baziSummary: string,
 ): Promise<string> {
   const { system, user } = getNameDetailPrompt(name, info, baziSummary)
-  return withRetry(() => chatCompletion(system, user, 0.7, 30000))
+  return withRetry(() => chatCompletion('generateNameDetail', system, user, 0.7, 30000))
 }
 
 /**
@@ -143,7 +179,7 @@ export async function generateNames(
     style,
     count,
   )
-  return withRetry(() => chatCompletion(system, user, 0.8, 45000))
+  return withRetry(() => chatCompletion('generateNames', system, user, 0.8, 45000))
 }
 
 /**
@@ -155,7 +191,7 @@ export async function analyzeName(
   info: BabyInfo,
 ): Promise<string> {
   const { system, user } = getNameAnalysisPrompt(name, info)
-  return withRetry(() => chatCompletion(system, user, 0.7, 30000))
+  return withRetry(() => chatCompletion('analyzeName', system, user, 0.7, 30000))
 }
 
 // --- Utility ---
